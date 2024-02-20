@@ -1,0 +1,129 @@
+McEarl
+
+A Minecraft Classic server
+    written in Erlang/OTP
+
+Why?
+
+Erlang/OTP
+
+@erlang.jxl
+
+Erlang/OTP:          
+\
+\
+\
+\
+\
+\
+
+Erlang/OTP:          
+- general-purpose
+\
+\
+\
+\
+\
+
+Erlang/OTP:          
+- general-purpose
+- functional
+\
+\
+\
+\
+
+Erlang/OTP:          
+- general-purpose
+- functional
+- concurrent
+\
+\
+\
+
+Erlang/OTP:          
+- general-purpose
+- functional
+- concurrent
+- distributed
+\
+\
+
+Erlang/OTP:          
+- general-purpose
+- functional
+- concurrent
+- distributed
+- hot-swappable
+\
+
+Erlang/OTP:          
+- general-purpose
+- functional
+- concurrent
+- distributed
+- hot-swappable
+- fault-tolerant
+
+Learning Outcomes:                      
+\
+\
+\
+\
+\
+
+Learning Outcomes:                      
+- Scalable Architecture
+- Development and Operations
+\
+\
+\
+
+Learning Outcomes:                      
+- Scalable Architecture ✓
+- Development and Operations ✓
+\
+\
+\
+
+Learning Outcomes:                      
+- Scalable Architecture ✓
+- Development and Operations ✓
+- Cloud Native
+- Security by Design
+\
+
+Learning Outcomes:                      
+- Scalable Architecture ✓
+- Development and Operations ✓
+- Cloud Native ?
+- Security by Design ?
+\
+
+Learning Outcomes:                      
+- Scalable Architecture ✓
+- Development and Operations ✓
+- Cloud Native ?
+- Security by Design ?
+- Distributed Data ✓
+
+Minecraft
+
+@mc.jxl
+
+Minecraft
+- 3D Game
+- Sandbox
+- Survival
+
+Research:
+- Available product analysis (mcmuseum, cserver, ...)
+- Document Analysis (Protocols at wiki.vg)
+- Book "Programming Erlang"
+
+Possible future developments:
+- Classic Protocol Extension (CPE)
+- Extra admin commands
+- Beta 1.7.3
+
+Fin.

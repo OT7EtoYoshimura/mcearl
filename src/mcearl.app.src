@@ -1,0 +1,15 @@
+{application, mcearl,
+ [{description, "Minecraft Classic server in Erlang"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {mcearl_app, []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["AGPL-3.0-only"]},
+  {links, []}
+ ]}.

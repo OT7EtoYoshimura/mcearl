@@ -1,0 +1,15 @@
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+    - rebar3-25 compile
+
+test:
+  stage: test
+  script:
+    - rebar3-25 dialyzer
+    - rebar3-25 eunit
+    - rebar3-25 ct

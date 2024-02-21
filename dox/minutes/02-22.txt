@@ -1,0 +1,46 @@
+Meeting started on:             Thu Feb 22 08:50:00 AM CET 2024
+Meeting ended on:               Thu Feb 22 10:11:13 AM CET 2024
+Participants:                   Emilia, Erik, Alexandra, Kaloyan, Ms. Zhao, Victor
+Agenda:                         Hackathon; First meeting with Ms. Zhao
+Setting:                        TQ5-2
+
+1. I arrived at TQ5 a bit before 9 and sat down together with Erik and Alexandra.
+2. Kaloyan joined soon as well and then Ms. Zhao sat on our table.
+3. We began discussing our group project with her.
+	a. We informed us of what we had done so far
+	b. We informed her of the missing file that had hindered our development
+	c. We then showed her our presentation as a conclusion to the hackathon
+	d. She was happy with our progress thus far and told us to keep the work
+4. She then explained to us that usually she likes to go to each group first and
+   discuss group project progress and then later at around 10 a.m. she likes
+   going to each person individually to discuss the individual projects.
+5. After that though, we picked up discussion about our individual projects
+6. Erik was first by discussing his Discord clone idea.
+7. Then was my turn
+	a. I gave pretty much the same presentation as the day before
+	b. It was modified however, based on Marcel's comments
+	c. The teacher was interested, but unlike Marcel, she stressed the
+	   importance of microservices in the architecture.
+	d. I tried to explain it to her that spawning new VMs is very
+	   cost-inefficient, and that spawning individual actors is faster;
+	   however she was unmoved. This should be discussed further.
+	e. She also stressed the importance of research. She said to look at
+	   benchmarks of different technologies before beginning work, which I
+	   had already included in my presentation pitch.
+	f. The most important part for me was a question of hers regarding
+	   resource mapping, and load-balancing. I hadn't thought much about
+	   load-balancing so far and this is something I must stress going
+	   further. I am certainly going to think about it and include it in my
+	   project plan going forward.
+	e. Speaking of, she also mentioned that next we should be looking into
+	   making a project plan with functional & non-functional requirements,
+	   user stories, and so on.
+	f. Given that some of us already had a checkpoint from yesterday, she
+	   told us for now to just submit our feedback in the comments, but to
+	   also ask Nicole later for as to how we should handle this.
+8. Next were the rest of my team members (Kaloyan -> Alexandra -> Victor)
+9. From their presentations and questions I learnt that a frontend is not that
+   important to the grade and that something very simple is enough.
+10. Ms. Zhao left the table and we continued our work on setting up our group
+    project development environment.
+11. Fin.

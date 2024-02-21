@@ -65,6 +65,9 @@ Erlang/OTP:
 - hot-swappable
 - fault-tolerant
 
+Erlang/OTP forces a tree-based actor model,
+which the VM can run in parallel and distribute.
+
 Learning Outcomes:                      
 \
 \
@@ -120,6 +123,12 @@ Research:
 - Available product analysis (mcmuseum, cserver, ...)
 - Document Analysis (Protocols at wiki.vg)
 - Book "Programming Erlang"
+- Comparsion studies
+
+MVP:
+- Basic protocols (Heartbeat, Identification, Block Change)
+- No messaging/chatting
+- No world data parsing
 
 Possible future developments:
 - Classic Protocol Extension (CPE)

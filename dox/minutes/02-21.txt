@@ -1,0 +1,75 @@
+Meeting started on:             Wed Feb 21 10:00:00 AM CET 2024
+Meeting ended on:               Wed Feb 21 13:00:00 AM CET 2024
+Participants:                   Emilia, Marcle, Erik, Alexandra
+Agenda:                         Pitch approval "McEarl"; Group Project Hackathon
+Setting:                        TQ5-2
+
+1. I sat down next to Erik and we began trying to work on the group project.
+2. Because of problems with git-lfs we could not make much progress.
+	a. in Sprint 0 the previous group added it to to git-lfs
+	b. On Oct 11 2023 the file, together with its .gitattributes
+	   description, was removed from git with the comment
+	   "Temporarily ignore LFS DipGen image".
+	c. We resurrected those files, but upon trying to fetch with git-lfs,
+	   we received a 404. Upon checking with the repository's
+	   "Usage Quotas" in gitlab, we found that the LFS storage was at 0 B,
+	   implying the file was gone.
+3. Alexandra and Marcel joined.
+5. We discussed with Mr. Boelaars our hindrances with getting started with the
+   group project due to the missing file.
+	a. He advised us to contact ASML and so we did.
+	b. He made sure we can still access the code and told us to at least
+	   begin looking at it as he doesn't want us to be idle.
+	c. I also showed him documentation we found from the previous group,
+	   detailing where and how we might start improving the algorithms.
+6. I then asked Marcel if we could have a conversation about my individual
+   project proposal pitch. He agreed and we began, following `pitch.sent`.
+	a. Marcel noted that in the language of the C4 model, what the teacher
+	   will be looking at now most is the C2 level: the Container layer.
+	b. When I began talking about the technology I had picked to use for my
+	   project—Erlang/OTP—Marcel stepped in to comment that they do not want
+	   to constrict us with technologies, so I shouldn't justify my choice.
+	c. I wanted emphasize that as I believe the technology will greatly aid
+	   me in achieving the learning outcomes.
+	d. Scalable Architecture and Distributed Data should come out of the box
+	   due to the tree-like actor model enforced by OTP. Mr. Boelaars
+	   however, mention that monitoring is an important part of this. I
+	   should be able to show how when more users connect to my server, the
+	   load gets redistributed and how the whole system scales.
+	e. For the Development and Operations learning outcome, Marcel
+	   underlined the DevOps requirements by Fontys. Namely, the CI/CD
+	   pipeline, Docker containers, and Kubernetes clusters. He stressed
+	   that those are scheduled for the latter half ot the semester, but
+	   that they should still be taken into account. He also made sure
+	   Erlang has Kubernetes support, before giving his approval.
+	f. As for Cloud Native I was a little hesitant as my program will be a
+	   simple program, that of course can be deployed on the cloud, but
+	   doesn't provide any fancy microservice architecture. Marcle reassured
+	   me that as long as it can be put on the cloud, without hampering the
+	   scalability and distribution of the server, things should be fine.
+	g. For Security by Design I was also a little afraid, as it doesn't seem
+	   like my program will handle as much sensitive data, as for example
+	   Twitter clone might. Mr. Boelaars spent the most amount of time on
+	   this point. He said that avoiding handling sensitive data is also
+	   "security by design", but that I need to document it at large. He
+	   also explained that security isn't just about server-client
+	   interactions but also developer-server, developer-deployment,
+	   server-server and so on. All of those things combined should provide
+	   enough area for Marcel to test me on.
+	h. Distributed Data, I am relatively confident should be easy to
+	   accomplish, as OTP forces one to write distributable code by design.
+	   It also provides Mnesia which is a distributed database, so the data
+	   part should be handled.
+7. Marcel also stressed prioritisation of activities. He said it's best for
+   students to first create and MVP, then pick individual small features to
+   build up, so as to showcase the proficient implementation of the Learning
+   Outcomes. That means a full project might not necessarily see the light of
+   day, and it is not even a necessity.
+8. As a first "working" version of my project involves and already implemented
+   Minecraft Classic protocol, that means the MVP might not be so small, but
+   Marcel noted that I should try and cut some corners so as to focus on the
+   Learning Outcomes.
+9. Erik and Alexandra next discussed their pitches with Marcel.
+10. Marcel left and went to the next group.
+11. Alexandra, Erik and I continued working on our individual work.
+12. Fin.

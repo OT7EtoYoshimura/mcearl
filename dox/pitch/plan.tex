@@ -1,0 +1,185 @@
+\documentclass{article} 
+\usepackage{graphicx, tabularx, biblatex, fancyhdr, makecell, hyperref}
+\addbibresource{res/ref.bib}
+\usepackage[super]{nth}
+\pagestyle{fancy}
+
+\fancyhead{}
+\fancyfoot{}
+
+\title{\textbf{McEarl} \\ \hfill \\ \large Project Plan \\ \large v0.1.0}
+\author{Emilia P. Stoyanova}
+\date{\today}
+
+\begin{document}
+\maketitle
+\begin{center}
+    \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{res/fontys.jpg}
+\end{center}
+
+\newpage
+\tableofcontents
+\listoftables
+
+\newpage
+\section{Project Assignment}
+\fancyhead[l]{\leftmark}
+\fancyhead[r]{\rightmark}
+\fancyfoot[l]{McEarl}
+\fancyfoot[c]{\thepage}
+\fancyfoot[r]{\textit{Emilia P. Stoyanova}}
+
+    \subsection{Context}
+    The following is a project plan from Emilia P. Stoyanova. The project it describes is named "McEarl". It is planned to be a Minecraft Classic Server in Erlang OTP. This project is to be presented to Fontys Hogeschool as it is Emilia's individual project for the \nth{6} Semester coursed, named "Advanced Software". \\
+
+    Minecraft is a 2011 sandbox game developed by Mojang Studios and originally released in 2009. Minecraft has become the best-selling video game in history, with over 300 million copies sold and nearly 140 million monthly active players as of 2023. It has been ported to several platforms. In Minecraft, players explore a blocky, pixelated procedurally generated, three-dimensional world with virtually infinite terrain. \\
+
+    Erlang is a general-purpose, concurrent, functional high-level programming language, and a garbage-collected runtime system. The term Erlang is used interchangeably with Erlang/OTP, or Open Telecom Platform (OTP), which consists of the Erlang runtime system, several ready-to-use components (OTP) mainly written in Erlang, and a set of design principles for Erlang programs.
+
+    \newpage
+    \subsection{Goal}
+    The goal of the project is twofold. That is mainly because of the nature of this project. Given that this will be presented to an educational institution, it sets as an integral part of this project the proper accomplishment of the desired \emph{Learning Outcomes}, directed by Fontys. On the other hand however, it also has to be said unmistakably that the proper completion of the program itself is the second main goal of this assignment. Both will be inspected more closely in the following paragraphs. \\
+
+    \subsubsection{In regards to Fontys}
+        As seen in table \ref{tab:learning-outcomes} in the Appendix (\S\ref{appendix}), the Learning Outcomes are divided into two parts: namely \emph{Professinal Development} and \emph{Technical Topics}. I shall not touch on the former part as much in this document, as I am inclined to believe that that should be left to other documents. What matters most here are the \emph{Technical Topics}. Those were touched on slightly in my original pitch \cite{s6-ind-pitch}; however, I shall expound on them in more detail here. It is my belief that Scalable Architectures, Development and Operations, and Distributed Data shall be the easier lot to fulfill. That is namely because:
+        \begin{itemize}
+            \item The main technologies I have chosen have been specifically design with intense scalability in mind. Thus, as long as I play by the books, I should achieve a lower-than-linear scaling factor, which is desirable.
+            \item I have yet to have many troubles with DevOps work. In previous semesters, I have been the designed DevOps person in the group. That combined with the fact that I often tinker with my own server on the side oftentimes, leads me to believe this is one of my strong areas. As long as I keep up the work, I should be able to showcase to my teachers my prowess here.
+            \item Erlang is one of the only programming languages, often described as "distributed". The main framework it offers---the \emph{Open Telecommunications Protocol}---provides outstanding error-tolerance. One of my jobs for this semester will be to spawn multiple nodes and to connect them together, so as to asure that if one fails, no data shall be lost, and the others can continue transacting in peace. A humourous example showing how that can be done is seen in "Erlang: The Movie"\footnote{\url{https://archive.org/details/ErlangTheMovie}}.
+        \end{itemize}
+        \newpage
+        Regarding the other two, I believe they should pose a bigger hindrance. That means that proper precaution should be taken. If I manage to balance out the difficulty of their completion with hard work and wisdom, reaching a proficient grading on them should be achievable by the end of the semester as well. My plan goes as follows:
+        \begin{itemize}
+            \item Cloud Native: although many of my peers have opted for developing social media clones, or other such programs which benefit greatly from microservices and such, I have not. Unfortunately, the technologies I have chosen benefit much more from a more "monolithic" design, as starting a new virtual machine for each connection is incredibly costly. I say \emph{monolight}; however, that is only half true. Using Docker containerisation should not be an issue. Furthermore, given that we are expected to cover Kubernetes orchestration in the workshops, given the current semester, I should also use that to my advantage as well.
+            \item Secure by Design: This has been discussed with my technical teachers as well, but it appears as I will not be handling that much sensitive information. Authentication by the rules of the protocol I am going to implement, is offloaded to a third-party, and profiles do not quite exist as such in social media services. I have been told I should document that well. Moreover, avoiding security blind-spots is also itself taking security by design. Given that my database will probably contain past messages from users, I shall take that into account given GDPR issues.
+        \end{itemize}
+
+    \subsubsection{In regards to the project itself}
+    The goal of the program is to be a working Minecraft Classic server. There are already a few such servers in existence, but none of this type. Other than it working as expected by future players, I also strive to put an emphasis on a few non-functional requirements as well, such as: minimalist and clean code; strict and proper adherence to standards; and the ability to handle a multitude of connections at once. An internal architecture of \emph{McEarl} made in the C4 format will also be presented in my \emph{Architecture Document}. \\
+
+    A possible future development could be expanding the server to facilitate communications in the improved CPE protocol, a plethora of admin commands, and possibly future versions of the game as well. Those are not planned for the initial release however.
+
+    \newpage
+    \subsection{Scope \& Preconditions}
+    \begin{itemize}
+        \item Inside Scope:
+        \begin{itemize}
+            \item A serving program that understands the Minecraft protocol v14
+            \item Concurrent, parallel, and distributed connections
+            \item Properly set-up CI/CD pipeline
+            \item Privacy capabilities according to the GDPR
+            \item Thorough documentation and paperwork
+        \end{itemize}
+        \item Outside Scope:
+        \begin{itemize}
+            \item Supporting Minecraft versions other than Minecraft Classic
+            \item Fancy and creative commands
+            \item A fully featured adminstrator panel
+        \end{itemize}
+    \end{itemize}
+
+    \subsection{Strategy}
+    The project will be following an \emph{AGILE} method of development, as devised by \emph{SCRUM}. That is mainly because of my familiarity with it. Although, I have also worked in a \emph{Watefall} manner, that was quite a bit more long ago and it came with plenty of hindrances. Agile methods of development provide a better way to handle out-of-the-blue problems and they contribute to the easy splitting up of tasks. Furthermore, it also feels like it is an easier way of development for more choatic types like me.
+
+    \newpage
+    \subsection{Research Question}
+    TODO
+
+\newpage
+\section{Project Organisation}
+    \subsection{Stakeholders and team members}
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|c|c|c|c|}
+            \hline \textbf{Name} & \textbf{Email} & \textbf{Role} & \textbf{Availability} \\
+            \hline \makecell{Emilia P.\\Stoyanova} & e.stoyanova@student.fontys.nl & Student & Mon, Tue--Wed \\
+            \hline Marcel Boelaars & m.boelaars@fontys.nl & Technical Teacher & \makecell{Mon \& Wed\\mornings} \\
+            \hline Qin Zhao & q.zhao@fontys.nl & Technical Teacher & \makecell{Mon \& Thu\\mornings} \\
+            \hline \makecell{Nicole Zuurbier-\\ Munneke} & n.munneke@fontys.nl & Semester Coach & \makecell{Mon \& Thu\\afternoons} \\
+            \hline
+        \end{tabular}
+        \caption{Contact Information}
+        \label{tab:contact-information}
+    \end{table}
+    \subsection{Communication}
+    Communication shall mainly take place in person. For the current semester, all students in my specialisation are scheduled on Monday, Tuesday, and Wednesday for TQ5-2. Whenever those dates coincide with my teachers' availability a meeting can take place. I plan on having at least one serious long meeting session with one of my teachers a week. Those should also yield a Feedpulse point which I shall fill up with my notes from the meeting. Furthermore, shorter check-up meetings can and will take place with other teachers in the meanwhile. \\
+
+    If anything important pops up, I am also available on email and teams as well. I check my mail more frequently; however, I also receive emails for missed Teams messages, so that should suffice as well. My communication has been a downfall of mine for previous semester, so I strive to better that today and now. All minutes from meetings and such can and should be found at my repository\footnote{\url{https://git.fhict.nl/I478954/mcearl/-/tree/main/dox/minutes}}.
+
+\newpage
+\section{Activities \& Time Plan}
+    \subsection{Phases of the Project}
+    TODO
+    \subsection{Time plan}
+    TODO
+
+\newpage
+\section{Testing Strategy \& Configuration Management}
+    TODO
+    \subsection{Testing Strategy}
+    TODO
+    \subsection{Test Environment \& Required Resources}
+    TODO
+    \subsection{Configuration Management}
+    TODO
+
+\newpage
+\section{Finances \& Risks}
+    \subsection{Project Budget}
+    N/A
+
+    \subsection{Risk \& Mitigation}
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|c|c|c|}
+             \hline \textbf{Risk} & \textbf{Prevention Activities} & \textbf{Mitigation Activities} \\
+             \hline TODO & TODO & TODO \\
+             \hline
+        \end{tabular}
+        \caption{Caption}
+        \label{tab:my_label}
+    \end{table}
+
+\newpage
+\section{Appendix}
+\label{appendix}
+    \begin{table}[h]
+        \begin{tabular}{ | c | c | c | c | }
+            \hline \textbf{Version} & \textbf{Changelog} & \textbf{Date} & \textbf{Rationale} \\
+            \hline v0.1.0 & Begin work on initial draft & \today & Issued \\
+            \hline & & & \\
+            \hline
+        \end{tabular}
+        \caption{Version History}
+        \label{tab:version-history}
+    \end{table}
+
+    \begin{table}[h]
+        \begin{tabular}{ | c | c | m{20em} | }
+            \hline \textbf{Version} & \textbf{Date} & \textbf{Receivers} \\
+            \hline v0.1.0 & \today & Fontys's Canvas Instructure \\
+            \hline & & \\
+            \hline
+        \end{tabular}
+        \caption{Distribution}
+        \label{tab:distribution}
+    \end{table}
+
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|c|c|}
+             \hline \textbf{Professional Development} & \textbf{Technical Topics} \\
+             \hline Professional Standard & Scalable Architectures \\
+             \hline Personal Leadership & Development and Operations \\
+             \hline & Cloud Native \\
+             \hline & Security by Design \\
+             \hline & Distributed Data \\
+             \hline 
+        \end{tabular}
+        \caption{Learning Outcomes}
+        \label{tab:learning-outcomes}
+    \end{table}
+
+    \newpage
+    \printbibliography
+\end{document}

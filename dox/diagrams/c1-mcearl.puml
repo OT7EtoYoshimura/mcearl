@@ -1,0 +1,22 @@
+@startuml mcearl
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title System Context Diagram\nMcEarl\nMinecraft Classic Server in Erlang/OTP
+
+Person(client1, "Client", "Plays Multiplayer")
+Person(client2, "Client", "Plays Multiplayer")
+Person(client3, "Client", "Plays Multiplayer")
+
+System(mcearl, "McEarl", "Minecraft Clasic Server")
+System_Ext(classicube, "Classicube", "Hosts the server list")
+
+Rel(client1, mcearl, "connects to")
+Rel(client2, mcearl, "connects to")
+Rel(client3, mcearl, "connects to")
+Rel(mcearl, classicube, "sends heartbeat packets to")
+
+LAYOUT_WITH_LEGEND()
+@enduml

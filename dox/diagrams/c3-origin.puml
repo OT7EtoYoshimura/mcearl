@@ -1,0 +1,45 @@
+@startuml origin
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Component Diagram\nMcEarl v2\nOrigin Node
+AddRelTag("dashed", $lineStyle = DashedLine())
+
+Person(client1, "Client", "Plays Multiplayer")
+Person(client2, "Client", "Plays Multiplayer")
+Person(client3, "Client", "Plays Multiplayer")
+
+Container_Boundary(boundary, "Origin Node") {
+	Component(masterSup, "Master Supervisor", "Component: Erlang Supervisor Actor")
+	Component(heartbeat, "Heartbeat", "Component: Erlang Worker Actor")
+	Component(listen, "TCP Listener", "Component: Erlang Worker Actor")
+	Component(serverSup, "Server Supervisor", "Component: Erlang Supervisor Actor")
+	Component(server1Comp, "Server Communicator", "Component: Erlang Worker Actor")
+	Component(server2Comp, "Server Communicator", "Component: Erlang Worker Actor")
+	Component(server3Comp, "Server Communicator", "Component: Erlang Worker Actor")
+}
+
+Container_Ext(server1, "Server Peer Node", "Container: Erlang Distributed Application")
+Container_Ext(server2, "Server Peer Node", "Container: Erlang Distributed Application")
+Container_Ext(server3, "Server Peer Node", "Container: Erlang Distributed Application")
+System_Ext(classicube, "Classicube", "Hosts the server list")
+
+Rel(client1, listen, "connects via")
+Rel(client2, listen, "connects via")
+Rel(client3, listen, "connects via")
+Rel(masterSup, serverSup, "supervises")
+Rel(masterSup, listen, "supervises")
+Rel(masterSup, heartbeat, "supervises")
+Rel(heartbeat, classicube, "sends heartbeat packets to")
+Rel(serverSup, server1Comp, "supervises")
+Rel(serverSup, server2Comp, "supervises")
+Rel(serverSup, server3Comp, "supervises")
+Rel(server1Comp, server1, "offloads communicates with")
+Rel(server2Comp, server2, "offloads communicates with")
+Rel(server3Comp, server3, "offloads communicates with")
+
+
+LAYOUT_WITH_LEGEND()
+@enduml

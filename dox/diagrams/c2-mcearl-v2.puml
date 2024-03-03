@@ -1,0 +1,34 @@
+@startuml mcearl-v2
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+title Container Diagram\nMcEarl v2\nMinecraft Classic Server in Erlang/OTP
+
+AddRelTag("dashed", $lineStyle = DashedLine())
+
+Person(client1, "Client", "Plays Multiplayer")
+Person(client2, "Client", "Plays Multiplayer")
+Person(client3, "Client", "Plays Multiplayer")
+
+System_Boundary(boundary, "McEarl") {
+	Container(origin, "Origin Node", "Container: Erlang Application")
+	Container(server1, "Server Peer Node", "Container: Erlang Distributed Application")
+	Container(server2, "Server Peer Node", "Container: Erlang Distributed Application")
+	Container(server3, "Server Peer Node", "Container: Erlang Distributed Application")
+	ContainerDb(db, "Distributed Database", "Container: Mnesia")
+}
+System_Ext(classicube, "Classicube", "Hosts the Server list")
+
+Rel(origin, classicube, "sends heartbeat packets to")
+Rel(client1, origin, "connects via", $tags=dashed")
+Rel(client2, origin, "connects via", $tags=dashed")
+Rel(client3, origin, "connects via", $tags=dashed")
+Rel(origin, server1, "offloads connections to")
+Rel(origin, server2, "offloads connections to")
+Rel(origin, server3, "offloads connections to")
+Rel(server1, db, "reads from & writes to")
+Rel(server2, db, "reads from & writes to")
+Rel(server3, db, "reads from & writes to")
+
+LAYOUT_WITH_LEGEND()
+@enduml

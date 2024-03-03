@@ -1,0 +1,47 @@
+Meeting started on:             Thu Feb 29 10:20:44 AM CET 2024
+Meeting ended on:               Thu Feb 29 11:00:58 AM CET 2024
+Participants:                   Emilia, Ms. Zhao
+Agenda:                         C4 diagrams
+Setting:                        TQ5-2
+
+1. I joined my team members' table at around 9:20 and sat quietly
+2. I tried to finish up my C4 diagrams before Ms. Zhao would arrive
+3. Ms. Zhao arrived swiftly and began talking with us
+	a. We informed her of our group project progress
+	b. We told her that the event storming session was not that productive
+	   for our group project; but it was still useful for our individuals.
+	c. Ms. Zhao went one-by-one for a quick feedback session
+4. After quickly checking up on everyone, we sat down together for one of
+   our required longer weekly sessions.
+5. I first began by telling her how I wanted to show her I had taken to heart
+   some of the things she had told me last time
+	a. I did that by showing her a working version of my C2 diagram
+	b. What was note-worthy about that is that it now contains a relay
+	   in-mind.
+	c. Then I went into a C3 diagram of my relay application, to show her
+	   the intricasies of it; she said it is not that important
+	d. Finally I also showed her a C3 diagram of my server applications to
+	   give her a better idea of my architecture
+6. I then also shared with her what else I had been working on, namely that I
+   had begun working on my project plan and user stories
+7. She told me that the project plan is a deliverable at the end of sprint 1
+   (week 5), but I insisted I wanted to begin working on it now, so as to give a
+   better idea to my supervisors of my project.
+8. For next time we agreed that I would work on and later together we would
+   discuss the following things:
+	a. C1 diagram to aid my other C2 and C3 diagrams
+	b. Project Plan
+	c. User Stories
+9. We then talked a little more about distribution:
+	a. She told me that my plan was a little too complex and optimistic
+	b. She told me that distributed data really mostly means that if a
+	   single service falls down, the rest do not suffer consequences.
+	c. Based on that I agreed to maybe put the TCP relay plans on the
+	   back-burner by first focusing on the server code.
+10. Finally she also mentioned that it is important for me to include the
+    following non-functional requirements in my project plan:
+	a. latency & delay
+	b. maximum clients connected at once
+	c. cluster size
+11. Ms. Zhao opened a feedpulse point for me and we ended our conversation
+12. Fin.

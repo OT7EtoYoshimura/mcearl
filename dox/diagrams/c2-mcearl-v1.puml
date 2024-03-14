@@ -8,9 +8,8 @@ title Container Diagram\nMcEarl v1\nMinecraft Classic Server in Erlang/OTP
 
 AddRelTag("dashed", $lineStyle = DashedLine())
 
-Person(client1, "Client", "Plays Multiplayer")
-Person(client2, "Client", "Plays Multiplayer")
-Person(client3, "Client", "Plays Multiplayer")
+Person(client, "Client", "Plays Multiplayer")
+Person(admin, "Admin", "Administers")
 
 System_Boundary(boundary, "McEarl") {
 	Container(server, "Server", "Container: Erlang Distributed Application")
@@ -18,9 +17,8 @@ System_Boundary(boundary, "McEarl") {
 }
 System_Ext(classicube, "Classicube", "Hosts the server list")
 
-Rel(client1, server, "connects via", $tags=dashed")
-Rel(client2, server, "connects via", $tags=dashed")
-Rel(client3, server, "connects via", $tags=dashed")
+Rel(client, server, "connects via", $tags=dashed")
+Rel(admin, server, "connects via", $tags=dashed")
 Rel(server, classicube, "sends heartbeat packets to")
 Rel(server, db, "reads from & writes to")
 

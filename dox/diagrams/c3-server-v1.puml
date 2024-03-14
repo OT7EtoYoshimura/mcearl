@@ -7,10 +7,8 @@
 title Component Diagram\nMcEarl v2\nServer
 AddRelTag("dashed", $lineStyle = DashedLine())
 
-
-Person(client1, "Client", "Plays Multiplayer")
-Person(client2, "Client", "Plays Multiplayer")
-Person(client3, "Client", "Plays Multiplayer")
+Person(client, "Client", "Plays Multiplayer")
+Person(admin, "Admin", "Administers")
 
 Container_Boundary(boundary, "Server") {
 	Component(masterSup, "Master Supervisor", "Component: Erlang Supervisor Actor")
@@ -18,28 +16,28 @@ Container_Boundary(boundary, "Server") {
 	Component(listen, "TCP Listener", "Component: Erlang Worker Actor")
 	Component(heartbeat, "Heartbeat", "Component: Erlang Worker Actor")
 	Component(clientSup, "Client Supervisor", "Component: Erlang Supervisor Actor")
-	Component(client1Comp, "Client Communicator", "Component: Erlang Worker Actor")
-	Component(client2Comp, "Client Communicator", "Component: Erlang Worker Actor")
-	Component(client3Comp, "Client Communicator", "Component: Erlang Worker Actor")
+	Component(clientComp, "Client Communicator", "Component: Erlang Worker Actor")
+	Component(adminSup, "Admin Supervisor", "Component: Erlang Supervisor Actor")
+	Component(adminComp, "Server Communicator", "Component: Erlang Worker Actor")
 }
 
 System_Ext(classicube, "Clssicube", "Hosts the server list")
 ContainerDb_Ext(db, "Distributed Database", "Container: Mnesia")
 
-Rel(client1, listen, "connects via")
-Rel(client2, listen, "connects via")
-Rel(client3, listen, "connects via")
+Rel_D(client, listen, "connects via")
+Rel_D(admin, listen, "connects via")
 Rel(heartbeat, classicube, "sends heartbeat packets to")
 Rel(masterSup, logger, "supervises")
 Rel(masterSup, clientSup, "supervises")
+Rel(masterSup, adminSup, "supervises")
 Rel(masterSup, listen, "supervises")
 Rel(masterSup, heartbeat, "supervises")
-Rel(clientSup, client1Comp, "supervises")
-Rel(clientSup, client2Comp, "supervises")
-Rel(clientSup, client3Comp, "supervises")
-Rel(client1Comp, db, "reads from & writes to")
-Rel(client2Comp, db, "reads from & writes to")
-Rel(client3Comp, db, "reads from & writes to")
+Rel(clientSup, clientComp, "supervises")
+Rel(clientComp, db, "reads from & writes to")
+Rel_U(clientComp, client, "communicates with")
+Rel(adminSup, adminComp, "supervises")
+Rel_U(adminComp, admin, "communicates with")
+Rel(adminComp, db, "reads from & writes to")
 
 LAYOUT_WITH_LEGEND()
 @enduml

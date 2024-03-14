@@ -1,1 +1,8 @@
-[].
+{"1.2.0",
+[{<<"erlang_base62">>,{pkg,<<"erlang_base62">>,<<"1.0.1">>},0}]}.
+[
+{pkg_hash,[
+ {<<"erlang_base62">>, <<"E1F2CD02D098BF813296F6136B2BFBA34A9B729C02677591D79B99BE27426915">>}]},
+{pkg_hash_ext,[
+ {<<"erlang_base62">>, <<"D95BFBC2545E15A3CD27E20B33DD696BDB1522C3B00923B2C037BEB97F0A15CE">>}]}
+].

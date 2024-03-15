@@ -4,14 +4,14 @@
 -type byte() :: 0 .. 255.
 -type sbyte() :: -128 .. 127.
 -type short() :: -32768 .. 32767.
--type nebin() :: non_empty_binary().
+-type nebin() :: nonempty_binary().
 -type fbyte() :: nebin().
 -type reason() :: distance | tile | clicking | lag.
 
 %%%%%%%%%%%%%%%%%%%%
 % Client -> Server %
 %%%%%%%%%%%%%%%%%%%%
--spec read(non_empty_binary()) -> tuple().
+-spec read(nebin()) -> tuple().
 
 read(<<16#00, 16#7, Name:64/binary, Key:64/binary, 16#0>>) ->
 	{Name, Key};
@@ -66,7 +66,7 @@ disconnectPlayer(Reason) ->
 	StringReason = mkReason(Reason),
 	PaddedReason = list_to_binary(string:pad(StringReason, 64)),
 	<<16#0e, PaddedReason/binary>>.
-updatedUserType(IsOp) ->
+updateUserType(IsOp) ->
 	PlayerType = mkOp(IsOp),
 	<<16#0f, PlayerType>>.
 

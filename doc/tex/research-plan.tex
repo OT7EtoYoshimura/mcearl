@@ -1,0 +1,130 @@
+\documentclass{article} 
+\usepackage{graphicx, tabularx, biblatex, fancyhdr, makecell, hyperref, xltabular}
+\addbibresource{res/ref.bib}
+\usepackage[super]{nth}
+\pagestyle{fancy}
+
+\fancyhead{}
+\fancyfoot{}
+
+\title{\textbf{McEarl} \\ \hfill \\ \large Research Plan \\ \large v1.0.0}
+\author{Emilia P. Stoyanova}
+\date{\today}
+
+\begin{document}
+\maketitle
+\begin{center}
+    \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{res/fontys.jpg}
+\end{center}
+
+\newpage
+\tableofcontents
+\listoftables
+
+\fancyhead[l]{}
+\fancyhead[r]{Research Plan}
+\fancyfoot[l]{McEarl}
+\fancyfoot[c]{\thepage}
+\fancyfoot[r]{\textit{Emilia P. Stoyanova}}
+
+\newpage
+\section{Introduction}
+\label{section:introduction}
+    As is tradition by now, we are required by Fontys to carry out a research assignment during every semester of work. This allows to further expand our knowledge with an \textit{applied} flair. Doing applied research is best done when focusing on one's already existing technical requirement as that empowers them to build better software, such that fewer unknown remains. \\
+
+    This semester we also greeted with a very fruitful workshop on the matter as well. \textit{Tom Langhorst} visited us on the \nth{13} of March at \textit{TQ5-2} to talk at lengths about applied research practice as put forward by \textit{HBO-i's ictresearchmethods}\footnote{\url{https://ictresearchmethods.nl}}. I have taken meticulous notes of that presentation---which can be found at my main repository\footnote{\url{https://git.fhict.nl/I478954/mcearl/-/blob/main/doc/minutes/03-13.md}}---however, the most important bits I have taken to heart from there can be summarised as follows:
+    \begin{itemize}
+        \item One research method per subquestion
+        \item \textit{Chaining} methods is highly beneficial
+        \item The research cycle is best handled in an iterative approach
+        \item Common research \textit{patterns} should be studied and applied
+    \end{itemize} \\
+
+    Further I find it most apt to also give a brief introduction of my project this semester. I shall work on a Minecraft Classic server written in Erlang/OTP. This semester's main emphasis is on non-functional requirements---such as: scalability \& distributivity---so those should play a crucial part in my research. As it has been said, I am working on a pierce of server software dealing directly with binary packet communication, so that could be a possible avenue for research as well. \\
+
+    With all of the aforementioned, the following part of the document should introduce the reader to my main research question going forward, its individual subquestions, research method selection, proper justification for said methods and a handy appendix for skimming purposes.
+
+\newpage
+\section{Research Questions}
+\label{section:research-questions}
+    \subsection{Main Question}
+    \label{section:main-question}
+    \textbf{How do I develop a state-of-the-art Minecraft server that meets the professional requirements of scalability and distributivity and security?}
+    \subsection{Subquestions:}
+    \label{section:subquestions}
+    \begin{enumerate}
+        \item \textit{How do Erlang's green processes square up against a microservice architecture with an external message broker?} \label{subquestion:erlang-processes}
+        \item \textit{How to carry out load-testing of a game server in Erlang, without having to write a completely new client program?} \label{subquestion:load-testing}
+        \item \textit{How to distribute an Erlang OTP application over multiple nodes?} \label{subquestion:distribution}
+        \item \textit{What should a developer know and be prepared for when operating under the constraints of GDPR\footnote{\url{https://gdpr-info.eu}} regulation?} \label{subquestion:gdpr}
+    \end{enumerate}
+
+\newpage
+\section{Research Methods \& Justification}
+\label{section:research-methods-and-justification}
+    During the process of my selecting the aforesaid questions, I was paying close attention to the common ICT research patterns. I noticed a lot of my thinking had been gravitating towards the \textit{Realise as an expert}\footnote{\url{https://ictresearchmethods.nl/patterns/realise-as-an-expert}} pattern. That steered me well until the end, where I basically reforumulated the already given question of:
+    \begin{quote}
+        How do I develop a state-of-the-art solution that meets professional requirements?
+    \end{quote}
+    The first three of my subquestions also fit perfectly with the required method types. The last one is the black sheep of the bunch, as this pattern only requires three subquestions; however, I've left it in as our teachers have made it quite explicit that taking great care of security matters is of upmost importance.
+
+    \begin{itemize}
+        \item Subquestion \ref{subquestion:erlang-processes} \\
+        \underline{Showroom}, \textit{Benchmark test}: \\
+        The performance and resilience of discrete programming blocks can be quite easily compared to each other. In the wild, there have already been quite a few benchmark studies to the best of my knowledge. I shall use this method to determine whether green processes contribute to the proper execution of the required non-functional requirements.
+        \item Subquestion \ref{subquestion:load-testing} \\
+        \underline{Workshop}, \textit{Gap analysis}: \\
+        Given the juxtaposition in the way I have posed this question, my eyes quickly landed on the "Gap analysis" method. It clearly splits the process into the known and the unknown: further, it guides the researcher it figuring a way to bridge that gap and complete the exercise.
+        \item Subquestion \ref{subquestion:distribution} \\
+        \underline{Library}, \textit{Best good and bad practices}: \\
+        This is an area I have no experience in. Other than having read about it, I have actually yet to put my knowledge of distributed OTP applications into use. As such, I believe it to be apt for me to stay close to already-tread ground. Looking out for best and good practices lends itself perfectly to this cause, as it should act as a lantern, guiding me through the unknown.
+        \item Subquestion \ref{subquestion:gdpr} \\
+        \underline{Library}, \textit{Literature study}: \\
+        This subquestions was tacked on at the end as it does not fit the original pattern. With that, it is repeating the already utilised "Library" research method type, but in this case "standing on the shoudlers of giants" seems most fitting. After this I should be equipped with the needed information for me to follow closely the security requirements Fontys has put on me.
+    \end{itemize}
+
+\newpage
+\section{Appendix}
+\label{section:appendix}
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{ | c | c | c | c | }
+            \hline \textbf{Version} & \textbf{Changelog} & \textbf{Date} & \textbf{Rationale} \\
+            \hline v1.0.0 & Finish first version & \today & Issued \\
+            \hline & & & \\
+            \hline
+        \end{tabular}
+        \caption{Version History}
+        \label{tab:version-history}
+    \end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{ | c | c | c | }
+            \hline \textbf{Version} & \textbf{Date} & \textbf{Receivers} \\
+            \hline v1.0.0 & \today & Fontys's Canvas Instructure \\
+            \hline & & \\
+            \hline
+        \end{tabular}
+        \caption{Distribution}
+        \label{tab:distribution}
+    \end{table}
+
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|c|c|}
+             \hline \textbf{Professional Development} & \textbf{Technical Topics} \\
+             \hline Professional Standard & Scalable Architectures \\
+             \hline Personal Leadership & Development and Operations \\
+             \hline & Cloud Native \\
+             \hline & Security by Design \\
+             \hline & Distributed Data \\
+             \hline 
+        \end{tabular}
+        \caption{Learning Outcomes}
+        \label{tab:learning-outcomes}
+    \end{table}
+
+    \newpage
+    \printbibliography
+\end{document}

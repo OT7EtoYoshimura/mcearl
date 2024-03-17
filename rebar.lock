@@ -1,11 +1,14 @@
 {"1.2.0",
-[ {<<"erlang_base62">>,{pkg,<<"erlang_base62">>,<<"1.0.1">>},0},
+[{<<"erl_nbt">>,{pkg,<<"erl_nbt">>,<<"1.0.0">>},0},
+ {<<"erlang_base62">>,{pkg,<<"erlang_base62">>,<<"1.0.1">>},0},
  {<<"proper">>,{pkg,<<"proper">>,<<"1.4.0">>},0}]}.
 [
 {pkg_hash,[
+ {<<"erl_nbt">>, <<"927A02A100C8453FED4FE2B81404E80DBBC71356BB2D3160601F8958FD8B6731">>},
  {<<"erlang_base62">>, <<"E1F2CD02D098BF813296F6136B2BFBA34A9B729C02677591D79B99BE27426915">>},
  {<<"proper">>, <<"89A44B8C39D28BB9B4BE8E4D715D534905B325470F2E0EC5E004D12484A79434">>}]},
 {pkg_hash_ext,[
+ {<<"erl_nbt">>, <<"664A016537E0E54BA11299246E4A1E4F89772ECC97B9C7FBF5DD7921A1F18012">>},
  {<<"erlang_base62">>, <<"D95BFBC2545E15A3CD27E20B33DD696BDB1522C3B00923B2C037BEB97F0A15CE">>},
  {<<"proper">>, <<"18285842185BD33EFBDA97D134A5CB5A0884384DB36119FEE0E3CFA488568CBB">>}]}
 ].

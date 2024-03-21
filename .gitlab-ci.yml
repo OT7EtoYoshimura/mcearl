@@ -1,5 +1,6 @@
 stages:
   - build
+  - check
   - test
 
 build:
@@ -16,5 +17,5 @@ check:
 test:
   stage: test
   script:
-    - rebar3-25 eunit
+    - rebar3-25 proper
     - rebar3-25 ct

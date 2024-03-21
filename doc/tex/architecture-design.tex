@@ -1,0 +1,74 @@
+\documentclass{article} 
+\usepackage{graphicx, tabularx, biblatex, fancyhdr, makecell, hyperref, xltabular}
+\addbibresource{res/ref.bib}
+\usepackage[super]{nth}
+\pagestyle{fancy}
+
+\fancyhead{}
+\fancyfoot{}
+
+\title{\textbf{McEarl} \\ \hfill \\ \large Architecture Design \\ \large v1.0.0}
+\author{Emilia P. Stoyanova}
+\date{\today}
+
+\begin{document}
+\maketitle
+\begin{center}
+    \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{res/fontys.jpg}
+\end{center}
+
+\newpage
+\tableofcontents
+\listoftables
+
+\fancyhead[l]{}
+\fancyhead[r]{Architecture Design}
+\fancyfoot[l]{McEarl}
+\fancyfoot[c]{\thepage}
+\fancyfoot[r]{\textit{Emilia P. Stoyanova}}
+
+\newpage
+\section{Appendix}
+\label{section:appendix}
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{ | c | c | c | c | }
+            \hline \textbf{Version} & \textbf{Changelog} & \textbf{Date} & \textbf{Rationale} \\
+            \hline v1.0.0 & Finish first version & \today & Issued \\
+            \hline & & & \\
+            \hline
+        \end{tabular}
+        \caption{Version History}
+        \label{tab:version-history}
+    \end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{ | c | c | c | }
+            \hline \textbf{Version} & \textbf{Date} & \textbf{Receivers} \\
+            \hline v1.0.0 & \today & Fontys's Canvas Instructure \\
+            \hline & & \\
+            \hline
+        \end{tabular}
+        \caption{Distribution}
+        \label{tab:distribution}
+    \end{table}
+
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|c|c|}
+             \hline \textbf{Professional Development} & \textbf{Technical Topics} \\
+             \hline Professional Standard & Scalable Architectures \\
+             \hline Personal Leadership & Development and Operations \\
+             \hline & Cloud Native \\
+             \hline & Security by Design \\
+             \hline & Distributed Data \\
+             \hline 
+        \end{tabular}
+        \caption{Learning Outcomes}
+        \label{tab:learning-outcomes}
+    \end{table}
+
+    \newpage
+    \printbibliography
+\end{document}

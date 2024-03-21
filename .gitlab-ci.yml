@@ -7,9 +7,14 @@ build:
   script:
     - rebar3-25 compile
 
+check:
+  stage: check
+  script:
+    - rebar3-25 xref
+    - rebar3-25 gradualizer
+
 test:
   stage: test
   script:
-    - rebar3-25 dialyzer
     - rebar3-25 eunit
     - rebar3-25 ct

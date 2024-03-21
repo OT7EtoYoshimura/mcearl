@@ -1,6 +1,5 @@
 -module(protocol).
 -export([parse/1, build/1]).
--include_lib("datum/include/datum.hrl").
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Protocol Specific types %
@@ -35,7 +34,7 @@
 %%%%%%%%%%%%%%%%%%%%
 % Client -> Server %
 %%%%%%%%%%%%%%%%%%%%
--spec parse(binary()) -> datum:option(pkt_load()).
+-spec parse(binary()) -> pkt_load() | undefined.
 
 parse(<<16#00, 16#7, Name:64/binary, Key:64/binary, IsOp>>) ->
 	TrimmedName = string:trim(binary_to_list(Name)),
@@ -53,7 +52,7 @@ parse(_) -> undefined.
 %%%%%%%%%%%%%%%%%%%%
 % Server -> Client %
 %%%%%%%%%%%%%%%%%%%%
--spec build(pkt_load()) -> datum:option(binary()).
+-spec build(pkt_load()) -> binary() | undefined.
 
 build({id, Name, MOTD, IsOp}) ->
 	PaddedName = pad(Name),

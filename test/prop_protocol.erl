@@ -37,9 +37,11 @@ foldl1(F, [X|Xs]) -> lists:foldl(F, X, Xs).
 by() -> range(0, 255).
 sby() -> range(-128, 127).
 sh() -> range(-32768, 32767).
-fsh() -> {range(-1024, 1023), range(0, 32)}.
-str() -> latin1().
+fsh() -> {range(-1024, 1023), range(0, 31)}.
+str() -> b().
 byarr() -> binary(1024).
 
-% Politely retrieved from Hebert's book :D
-latin1() -> ?SUCHTHAT(S, string(), io_lib:printable_latin1_list(S)).
+
+b() -> ?LET(Str, a(), string:trim(Str)).
+a() -> ?SUCHTHAT(Str, list(ascii_char()), length(Str) =< 64).
+ascii_char() -> ?SUCHTHAT(Ch, char(), Ch =< 127).

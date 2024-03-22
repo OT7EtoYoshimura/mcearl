@@ -1,5 +1,5 @@
 -module(server).
--export[start/0, chunksOf/2, world/0].
+-export[start/0].
 
 -define(MAXUSR, "32").
 -define(NAME, "Testing....").
@@ -15,11 +15,7 @@ run() ->
 	receive {tcp, Accept, Msg} ->
 		case protocol:parse(Msg) of
 			{id, Name, Key, _IsOp} ->
-				gen_tcp:send(Accept, protocol:build({id, ?NAME, ?MOTD, false})),
-				gen_tcp:send(Accept, protocol:build({lvl_init})),
-				gen_tcp:send(Accept, protocol:build({lvl_data})),
-				{ByteArray, X, Y, Z} = world(),
-				gen_tcp:send(Accept, protocol:build({lvl_fin, X, Y, Z})),
+				welcome(Accept),
 				run();
 			{set_block_m, X, Y, Z, Mode, 16#00} ->
 				run();
@@ -30,29 +26,22 @@ run() ->
 		end
 	end.
 
-world() ->
-	{ok, File} = file:read_file("priv/world.cw"),
-	GunzippedFile = zlib:gunzip(File),
-	{ok, NBT} = erl_nbt:decode(GunzippedFile),
-	#{"ClassicWorld" := ClassicWorld} = NBT,
-	#{ "X" := {short, X}, "Y" := {short, Y}, "Z" := {short, Z}} = ClassicWorld,
-	#{"BlockArray" := {byte_array, ByteArray}} = ClassicWorld,
-	Len = length(ByteArray),
-	Blocks = list_to_binary(ByteArray),
-	Prefixed = <<Len:32, Blocks/binary>>,
-	Gzipped = zlib:gzip(Prefixed),
-	chunksOf(1024, 
-	{ByteArray, X, Y, Z}.
+welcome(Accept) ->
+	gen_tcp:send(Accept, protocol:build({id, ?NAME, ?MOTD, false})),
+	gen_tcp:send(Accept, protocol:build({lvl_init})),
+	{PaddingLen, Chunks, X, Y, Z} = world:read("world.cw"),
+	LvlDataPkts = build_lvl_data_pkts(PaddingLen, Chunks),
+	lists:foreach(fun(Pkt) -> gen_tcp:send(Accept, Pkt) end, LvlDataPkts),
+	gen_tcp:send(Accept, protocol:build({lvl_fin, X, Y, Z})).
 
-chunksOf(Len, Bin) ->
-	LeaderLen = case byte_size(Bin) rem Len of
-		0 -> 0;
-		N -> Len - N
-	end,
-	Leader = binary:copy(<<16#00>>, LeaderLen),
-        chunksOf(Len, <<Bin/binary, Leader/binary>>, []).
-chunksOf(Len, <<>>, Acc) ->
-	lists:reverse(Acc);
-chunksOf(Len, List, Acc) ->
-	{Head, Tail} = split_binary(List, Len),
-	chunksOf(Len, Tail, [Head | Acc]).
+build_lvl_data_pkts(PaddingLen, Chunks) ->
+	ChunksCnt = length(Chunks),
+	EnumChunks = lists:enumerate(Chunks),
+	lists:map(
+		fun({N, Chunk}) when N =:= ChunksCnt ->
+			protocol:build({lvl_data}, 1024 - PaddingLen, Chunk, 100);
+		   ({N, Chunk}) ->
+			protocol:build({lvl_data}, 1024, Chunk, N / ChunksCnt * 100)
+		end,
+		EnumChunks
+	).

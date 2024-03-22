@@ -1,6 +1,6 @@
 % -feature(maybe_expr, enable).
 -module(heartbeat).
--export([salt/0, format/4, apply_interval/2]).
+-export([salt/0, format/4, apply_interval/2, heartbeat/1]).
 -define(MINUTE, 60*1000).
 
 apply_interval(MaxUsers, Name) ->
@@ -27,7 +27,7 @@ format(Max, Name, Salt, Users) ->
 			{"salt", Salt},
 			{"users", Users}
 		]),
-		Url ++ "?" ++ Query
+		Url ++ "?" ++ Query.
 	% else
 	% 	{error, Reason, Cause} -> {Reason, Cause}
 	% end.

@@ -6,11 +6,11 @@
 -define(MOTD, "Testing my server implementation; not playable !").
 
 start() ->
-	heartbeat:apply_interval(?MAXUSR, ?NAME),
-	run().
-
-run() ->
 	{ok, Listen} = gen_tcp:listen(8091, [{active, true}, binary]),
+	heartbeat:apply_interval(?MAXUSR, ?NAME),
+	run(Listen).
+
+run(Listen) ->
 	{ok, Accept} = gen_tcp:accept(Listen),
 	receive {tcp, Accept, Msg} ->
 		case protocol:parse(Msg) of

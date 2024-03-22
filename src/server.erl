@@ -16,13 +16,13 @@ run(Listen) ->
 		case protocol:parse(Msg) of
 			{id, Name, Key, _IsOp} ->
 				welcome(Accept),
-				run();
+				run(Listen);
 			{set_block_m, X, Y, Z, Mode, 16#00} ->
-				run();
+				run(Listen);
 			{pos_and_orient, -1, X, Y, Z, Yaw, Pitch} ->
-				run();
+				run(Listen);
 			{msg, -1, Message} ->
-				run()
+				run(Listen)
 		end
 	end.
 

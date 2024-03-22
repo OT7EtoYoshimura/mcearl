@@ -25,7 +25,7 @@
                   | {set_block_m, sh(), sh(), sh(), mode(), by()}
                   | {pos_and_orient, sby(), fsh(), fsh(), fsh(), by(), by()}
                   | {msg, sby(), str()}
-                  | {ping} | {level_init}
+                  | {ping} | {lvl_init}
                   | {lvl_data, sh(), byarr(), by()}
                   | {lvl_fin, sh(), sh(), sh()}
                   | {spawn, sby(), str(), fsh(), fsh(), fsh(), by(), by()}
@@ -62,7 +62,7 @@ build({id, Name, MOTD, IsOp}) ->
 	PlayerType = fromOp(IsOp),
 	<<16#00, 16#07, PaddedName/binary, PaddedMOTD/binary, PlayerType>>;
 build({ping}) -> <<16#01>>;
-build({level_init}) -> <<16#02>>;
+build({lvl_init}) -> <<16#02>>;
 build({lvl_data, Length, Data, PercComp}) ->
 	<<16#03, Length:16/signed, Data:1024/binary, PercComp>>;
 build({lvl_fin, XSize, YSize, ZSize}) ->

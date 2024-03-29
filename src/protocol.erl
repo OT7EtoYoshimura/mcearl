@@ -20,7 +20,7 @@ parse(<<16#05, X:16/signed, Y:16/signed, Z:16/signed, Mode, BlockType>>) ->
 parse(<<16#06, X:16/signed, Y:16/signed, Z:16/signed, BlockType>>) ->
 	{set_block, X, Y, Z, BlockType};
 parse(<<16#07, PlayerId/signed, Name:?STR_SIZE/binary, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>) ->
-	{PlayerId, bin_trim_right(Name), {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch};
+	{spawn, PlayerId, bin_trim_right(Name), {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch};
 parse(<<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>) ->
 	{pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch};
 parse(<<16#09, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5, Yaw, Pitch>>) ->
@@ -108,7 +108,7 @@ fromReason(undefined) -> <<"Cheat detected: undefined                           
 toReason(<<"Cheat detected: Distance                                        ">>) -> distance;
 toReason(<<"Cheat detected: Tile type                                       ">>) -> tile;
 toReason(<<"Cheat detected: Too much clicking!                              ">>) -> clicking;
-toReason(<<"Cheat detected: Too much lag                                    ">>) -> tag;
+toReason(<<"Cheat detected: Too much lag                                    ">>) -> lag;
 toReason(_)                                                                      -> undefined.
 
 fromOp(true)  -> 16#64;

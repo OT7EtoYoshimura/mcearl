@@ -1,15 +1,11 @@
 {application, mcearl,
  [{description, "Minecraft Classic server in Erlang"},
   {vsn, "0.1.0"},
-  {registered, []},
-  {mod, {mcearl_app, []}},
-  {applications,
-   [kernel,
-    stdlib
-   ]},
-  {env,[]},
-  {modules, []},
-
   {licenses, ["AGPL-3.0-only"]},
-  {links, []}
+  {mod, {mcearl_app, []}},
+  {env,[]},
+  {links, []},
+  {applications, [kernel, stdlib, mnesia, inets]},
+  {registered, [mcearl_app, mcearl_sup, listener_serv, heartbeat_serv, player_sup]},
+  {modules, [mcearl_app, mcearl_sup, listener_serv, heartbeat_serv, player_sup, player_serv, protocol, world]}
  ]}.

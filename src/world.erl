@@ -23,8 +23,8 @@ read(FileName) ->
 %	- this is then split into 1024 byte chunks, to be sent to the client
 %	- the final chunk is padded with 0x00 bytes.
 prepare(BlockArr) ->
-	Len = length(BlockArr),
 	BinArr = list_to_binary(BlockArr),
+	Len = byte_size(BinArr),
 	PrefixedArr = <<Len:32, BinArr/binary>>,
 	GzippedArr = zlib:gzip(PrefixedArr),
 	chunksOf(1024, GzippedArr).

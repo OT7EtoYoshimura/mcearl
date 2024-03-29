@@ -1,10 +1,10 @@
-@startuml server-v1
+@startuml c3-server-v1
 
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-title Component Diagram\nMcEarl v2\nServer
+title Component Diagram\nMcEarl v1\nServer
 AddRelTag("dashed", $lineStyle = DashedLine())
 
 Person(client, "Client", "Plays Multiplayer")

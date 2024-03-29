@@ -1,4 +1,4 @@
-@startuml mcearl-v1
+@startuml c2-mcearl-v1
 
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml

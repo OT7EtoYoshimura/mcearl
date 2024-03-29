@@ -4,32 +4,20 @@
 %%%%%%%%%%%%%%%%%%
 %%% Properties %%%
 %%%%%%%%%%%%%%%%%%
-prop_id() ->
-	?FORALL(Pkt, {id, str(), str(), boolean()},
-		begin
-			Pkt =:= protocol:parse(protocol:build(Pkt))
-		end
-	).
-
-prop_pos_and_orient() ->
-	?FORALL(Pkt, {pos_and_orient, sby(), fsh(), fsh(), fsh(), by(), by()},
-		begin
-			Pkt =:= protocol:parse(protocol:build(Pkt))
-		end
-	).
-
-prop_msg() ->
-	?FORALL(Pkt, {msg, sby(), str()},
-		begin
-			Pkt =:= protocol:parse(protocol:build(Pkt))
-		end
-	).
+prop_id() -> invertible({id, str(), str(), boolean()}).
+prop_ping() -> invertible({ping}).
+prop_lvl_init() -> invertible({lvl_init}).
+prop_pos_and_orient() -> invertible({pos_and_orient, sby(), fsh(), fsh(), fsh(), by(), by()}).
+prop_msg() -> invertible({msg, sby(), str()}).
 
 %%%%%%%%%%%%%%%
 %%% Helpers %%%
 %%%%%%%%%%%%%%%
-biggest(List) -> foldl1(fun erlang:max/2, List).
-foldl1(F, [X|Xs]) -> lists:foldl(F, X, Xs).
+invertible(Data) ->
+	proper:forall(
+		Data,
+		fun(Pkt) -> Pkt =:= protocol:parse(protocol:build(Pkt)) end
+	).
 
 %%%%%%%%%%%%%%%%%%
 %%% Generators %%%
@@ -38,10 +26,10 @@ by() -> range(0, 255).
 sby() -> range(-128, 127).
 sh() -> range(-32768, 32767).
 fsh() -> {range(-1024, 1023), range(0, 31)}.
-str() -> b().
+str() -> ascii_binary().
 byarr() -> binary(1024).
 
-
-b() -> ?LET(Str, a(), string:trim(Str)).
-a() -> ?SUCHTHAT(Str, list(ascii_char()), length(Str) =< 64).
+ascii_binary() -> ?LET(Bin, ascii_list_trimmed(), list_to_binary(Bin)).
+ascii_list_trimmed() -> ?LET(Str, ascii_list(), string:trim(Str)).
+ascii_list() -> ?SUCHTHAT(Str, list(ascii_char()), length(Str) =< 64).
 ascii_char() -> ?SUCHTHAT(Ch, char(), Ch =< 127).

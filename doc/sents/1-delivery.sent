@@ -1,0 +1,43 @@
+           McEarl
+Sprint one Delivery
+Emilia P. Stoyanova
+
+A Minecraft Classic server
+    written in Erlang/OTP
+
+Sprint Goals:
+- Project Plan
+- Research Plan
+- Architecture Document
+
+Sprint Achievements:
+- Project Plan ✓
+- Research Plan ✓
+- Architecture document ✗
+- Walking Skeleton ✓
+
+# Project Management Overview
+
+Relevant Project Documentation
+- Project Pitch
+- Project Plan
+- Testing Plan
+- C4 diagrams
+- Reading Guide
+- Minutes
+
+CI/CD pipeline
+
+@cicd.jxl
+
+Sprint Retrospective:
+- Did not foresee walking skeleton requirement inititally
+- Nevertheless, did quite a bit of programming
+- Could not finish architecture document
+
+Next Sprint Planning:
+- Do Research (First SQ)
+- Finish Architecture Document
+- Pen Analysis Document
+- Work on the implementation
+- Containerise solution (CD)

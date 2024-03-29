@@ -1,5 +1,5 @@
 -module(server).
--export[start/0].
+-export[start/0, run/1].
 
 -define(MAXUSR, "32").
 -define(NAME, "Testing....").

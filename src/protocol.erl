@@ -2,63 +2,48 @@
 -export([parse/1, build/1]).
 
 -define(STR_SIZE, 64).
--define(WS, 32).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Protocol Specific types %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% -type types() :: by() | sby() | fby() | sh() | fsh() | str() | byarr().
-% -type pkt_id()   :: id | set_block | pos_and_orient | msg | ping | lvl_init
-%                   | lvl_data | lvl_fin | spawn | pos_and_orient_up | pos_up
-%                   | orient_up | despawn | disconnect | user_type_up.
-
--type by()    :: 0 .. 255.
--type sby()   :: -128 .. 127.
-% -type fby()   :: {-4..3, 0..31}.
--type sh()    :: -32768 .. 32767.
--type fsh()   :: {-1024..1023, 0..31}.
--type str()   :: string().
--type byarr() :: binary().
-
--type pkt_load() :: {id, str(), str(), boolean()}
-                  | {set_block,   sh(), sh(), sh(),         by()}
-                  | {set_block_m, sh(), sh(), sh(), mode(), by()}
-                  | {pos_and_orient, sby(), fsh(), fsh(), fsh(), by(), by()}
-                  | {msg, sby(), str()}
-                  | {ping} | {lvl_init}
-                  | {lvl_data, sh(), byarr(), by()}
-                  | {lvl_fin, sh(), sh(), sh()}
-                  | {spawn, sby(), str(), fsh(), fsh(), fsh(), by(), by()}
-                  | {despawn, sby()}
-                  | {disconnect, reason()}
-                  | {user_type_up, boolean()}.
-
-%%%%%%%%%%%%%%%%%%%%
-% Client -> Server %
-%%%%%%%%%%%%%%%%%%%%
--spec parse(binary()) -> pkt_load() | undefined.
-
+%================%
+% Packet Parsing %
+%================%
+-spec parse(binary()) -> tuple().
 parse(<<16#00, 16#7, Name:?STR_SIZE/binary, Key:?STR_SIZE/binary, IsOp>>) ->
-	TrimmedName = trim(Name),
-	TrimmedKey  = trim(Key),
-	{id, TrimmedName, TrimmedKey, toOp(IsOp)}; % IsOp is allways 16#00
+	{id, bin_trim_right(Name), bin_trim_right(Key), toOp(IsOp)};
+parse(<<16#01>>) -> {ping};
+parse(<<16#02>>) -> {lvl_init};
+parse(<<16#03, Length:16/signed, Data:1024/binary, PercComp>>) ->
+	{lvl_data, Length, Data, PercComp};
+parse(<<16#04, XSize:16/signed, YSize:16/signed, ZSize:16/signed>>) ->
+	{lvl_fin, XSize, YSize, ZSize};
 parse(<<16#05, X:16/signed, Y:16/signed, Z:16/signed, Mode, BlockType>>) ->
-	{set_block_m, mkSh(X), mkSh(Y), mkSh(Z), toMode(Mode), mkBy(BlockType)};
+	{set_block_m, X, Y, Z, toMode(Mode), BlockType};
+parse(<<16#06, X:16/signed, Y:16/signed, Z:16/signed, BlockType>>) ->
+	{set_block, X, Y, Z, BlockType};
+parse(<<16#07, PlayerId/signed, Name:?STR_SIZE/binary, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>) ->
+	{PlayerId, bin_trim_right(Name), {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch};
 parse(<<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>) ->
-	{pos_and_orient, mkSby(PlayerId), mkFsh(XInt, XFrac), mkFsh(YInt, YFrac), mkFsh(ZInt, ZFrac), mkBy(Yaw), mkBy(Pitch)};
+	{pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch};
+parse(<<16#09, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5, Yaw, Pitch>>) ->
+	{pos_and_orient_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch};
+parse(<<16#0a, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5>>) ->
+	{pos_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}};
+parse(<<16#0b, PlayerId/signed, Yaw, Pitch>>) ->
+	{orient_up, PlayerId, Yaw, Pitch};
+parse(<<16#0c, PlayerId/signed>>) -> {despawn, PlayerId};
 parse(<<16#0d, PlayerId/signed, Message:?STR_SIZE/binary>>) ->
-	TrimmedMessage = string:trim(binary_to_list(Message)),
-	{msg, mkSby(PlayerId), TrimmedMessage};
+	{msg, PlayerId, bin_trim_right(Message)};
+parse(<<16#0e, Reason:?STR_SIZE/binary>>) ->
+	{disconnect, toReason(Reason)};
+parse(<<16#0f, UserType>>) -> {user_type_up, toOp(UserType)};
 parse(_) -> undefined.
 
-%%%%%%%%%%%%%%%%%%%%
-% Server -> Client %
-%%%%%%%%%%%%%%%%%%%%
--spec build(pkt_load()) -> binary() | undefined.
-
+%=================%
+% Packet Building %
+%=================%
+-spec build(tuple()) -> binary().
 build({id, Name, MOTD, IsOp}) ->
-	PaddedName = pad(Name),
-	PaddedMOTD = pad(MOTD),
+	PaddedName = bin_pad(Name),
+	PaddedMOTD = bin_pad(MOTD),
 	PlayerType = fromOp(IsOp),
 	<<16#00, 16#07, PaddedName/binary, PaddedMOTD/binary, PlayerType>>;
 build({ping}) -> <<16#01>>;
@@ -67,22 +52,30 @@ build({lvl_data, Length, Data, PercComp}) ->
 	<<16#03, Length:16/signed, Data:1024/binary, PercComp>>;
 build({lvl_fin, XSize, YSize, ZSize}) ->
 	<<16#04, XSize:16/signed, YSize:16/signed, ZSize:16/signed>>;
+build({set_block_m, X, Y, Z, Mode, BlockType}) ->
+	ModeBin = fromMode(Mode),
+	<<16#05, X:16/signed, Y:16/signed, Z:16/signed, ModeBin, BlockType>>;
 build({set_block, X, Y, Z, BlockType}) ->
 	<<16#06, X:16/signed, Y:16/signed, Z:16/signed, BlockType>>;
 build({spawn, PlayerId, Name, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch}) ->
-	PaddedName = pad(Name),
+	PaddedName = bin_pad(Name),
 	<<16#07, PlayerId/signed, PaddedName/binary, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>;
 build({pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch}) ->
 	<<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>;
+build({pos_and_orient_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch}) ->
+	<<16#09, PlayerId/signed, XInt:3, XFrac:5, YInt:3, YFrac:5, ZInt:3, ZFrac:5, Yaw, Pitch>>;
+build({pos_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}}) ->
+	<<16#0a, PlayerId/signed, XInt:3, XFrac:5, YInt:3, YFrac:5, ZInt:3, ZFrac:5>>;
+build({orient_up, PlayerId, Yaw, Pitch}) ->
+	<<16#0b, PlayerId/signed, Yaw, Pitch>>;
 build({despawn, PlayerId}) ->
 	<<16#0c, PlayerId/signed>>;
 build({msg, PlayerId, Message}) ->
-	PaddedMessage = pad(Message),
+	PaddedMessage = bin_pad(Message),
 	<<16#0d, PlayerId/signed, PaddedMessage/binary>>;
 build({disconnect, Reason}) ->
-	StringReason = fromReason(Reason),
-	PaddedReason = pad(StringReason),
-	<<16#0e, PaddedReason/binary>>;
+	ReasonBin = fromReason(Reason),
+	<<16#0e, ReasonBin/binary>>;
 build({user_type_up, IsOp}) ->
 	PlayerType = fromOp(IsOp),
 	<<16#0f, PlayerType>>;
@@ -94,51 +87,54 @@ build(_) -> undefined.
 -type reason() :: distance | tile | clicking | lag.
 -type mode()   :: created | destroyed.
 
--spec fromReason(reason()) -> string().
--spec fromOp(boolean()) -> 16#64 | 16#00.
--spec toOp(16#64 | 16#00) -> boolean().
--spec mkSh(integer()) -> sh().
--spec mkBy(integer()) -> by().
--spec mkSby(integer()) -> sby().
-% -spec mkFby(integer(), integer()) -> fby().
--spec mkFsh(integer(), integer()) -> fsh().
--spec trim(binary()) -> str().
--spec pad(str()) -> binary().
--spec clamp(integer(), integer(), integer()) -> integer().
+-spec fromReason(reason() | undefined) -> binary().
+-spec toReason(binary()) -> reason() | undefined.
+-spec fromOp(boolean()) -> char().
+-spec toOp(char()) -> boolean().
+-spec fromMode(mode() | undefined) -> char().
+-spec toMode(char()) -> mode() | undefined.
 
-fromReason(distance) -> "Cheat detected: Distance";
-fromReason(tile)     -> "Cheat detected: Tile type";
-fromReason(clicking) -> "Cheat detected: Too much clicking!";
-fromReason(lag)      -> "Cheat detected: Too much lag".
+-spec bin_pad(binary()) -> binary().
+-spec bin_trim_right(binary()) -> binary().
+-spec bin_trim_left(binary()) -> binary().
+-spec bin_rev(binary()) -> binary().
+
+fromReason(distance)  -> <<"Cheat detected: Distance                                        ">>;
+fromReason(tile)      -> <<"Cheat detected: Tile type                                       ">>;
+fromReason(clicking)  -> <<"Cheat detected: Too much clicking!                              ">>;
+fromReason(lag)       -> <<"Cheat detected: Too much lag                                    ">>;
+fromReason(undefined) -> <<"Cheat detected: undefined                                       ">>.
+
+toReason(<<"Cheat detected: Distance                                        ">>) -> distance;
+toReason(<<"Cheat detected: Tile type                                       ">>) -> tile;
+toReason(<<"Cheat detected: Too much clicking!                              ">>) -> clicking;
+toReason(<<"Cheat detected: Too much lag                                    ">>) -> tag;
+toReason(_)                                                                      -> undefined.
 
 fromOp(true)  -> 16#64;
 fromOp(false) -> 16#00.
 
 toOp(16#64) -> true;
-toOp(16#00) -> false.
+toOp(16#00) -> false;
+toOp(_)     -> false.
 
-% fromMode(created)   -> 16#01;
-% fromMode(destroyed) -> 16#00.
+fromMode(created)   -> 16#01;
+fromMode(destroyed) -> 16#00;
+fromMode(_)         -> 16#00.
 
 toMode(16#01) -> created;
 toMode(16#00) -> destroyed;
 toMode(_)     -> undefined.
 
-mkSh(X) -> clamp(X, -32768, 32767).
-mkBy(X) -> clamp(X, 0, 255).
-mkSby(X) -> clamp(X, -128, 127).
-% mkFby(Integral, Frac) -> {clamp(Integral,    -4,   3), clamp(Frac, 0, 31)}.
-mkFsh(Integral, Frac) -> {clamp(Integral, -1024,1023), clamp(Frac, 0, 31)}.
 
-trim(Bin) ->
-	Str = binary_to_list(Bin),
-	Rev = lists:reverse(Str),
-	Trimmed = lists:dropwhile(fun(Ch) -> Ch =:= ?WS end, Rev),
-	lists:reverse(Trimmed).
-pad(Str) ->
-	Len = length(Str),
-	Padding = lists:duplicate(?STR_SIZE - Len, " "),
-	Padded = Str ++ Padding,
-	list_to_binary(Padded).
-
-clamp(X, Min, Max) -> min(max(X, Min), Max).
+bin_pad(Bin) ->
+	Padding = binary:copy(<<" ">>, 64 - size(Bin)),
+	<<Bin/binary, Padding/binary>>.
+bin_trim_right(Bin) -> bin_rev(bin_trim_left(bin_rev(Bin))).
+bin_trim_left(<<" ">>) -> <<>>;
+bin_trim_left(<<" ", Rest/binary>>) -> bin_trim_left(Rest);
+bin_trim_left(Bin)                  -> Bin.
+bin_rev(Bin) ->
+	Size = erlang:bit_size(Bin),
+	<<X:Size/integer-little>> = Bin,
+	<<X:Size/integer-big>>.

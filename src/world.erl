@@ -14,8 +14,8 @@ read(FileName) ->
 			}
 		)
 	} = NBT,
-	{LeaderLen, Chunks} = prepare(BlockArr),
-	{LeaderLen, Chunks, X, Y, Z}.
+	{PaddingLen, Chunks} = prepare(BlockArr),
+	{PaddingLen, Chunks, X, Y, Z}.
 
 % Before being sent to the client:
 %	- it is prefixed with its length as a big-endian int (4 bytes)
@@ -30,12 +30,12 @@ prepare(BlockArr) ->
 	chunksOf(1024, GzippedArr).
 
 chunksOf(Len, Bin) ->
-	LeaderLen = case byte_size(Bin) rem Len of
+	PaddingLen = case byte_size(Bin) rem Len of
 		0 -> 0;
 		N -> Len - N
 	end,
-	Leader = binary:copy(<<16#00>>, LeaderLen),
-	{LeaderLen, chunksOf(Len, <<Bin/binary, Leader/binary>>, [])}.
+	Padding = binary:copy(<<16#00>>, PaddingLen),
+	{PaddingLen, chunksOf(Len, <<Bin/binary, Padding/binary>>, [])}.
 chunksOf(Len, <<>>, Acc) ->
 	lists:reverse(Acc);
 chunksOf(Len, List, Acc) ->

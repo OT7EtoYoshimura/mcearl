@@ -3,10 +3,10 @@
 
 -define(STR_SIZE, 64).
 
-%================%
+% ============== %
 % Packet Parsing %
-%================%
--spec parse(binary()) -> tuple().
+% ============== %
+-spec parse(binary()) -> tuple() | undefined.
 parse(<<16#00, 16#7, Name:?STR_SIZE/binary, Key:?STR_SIZE/binary, IsOp>>) ->
 	{id, bin_trim_right(Name), bin_trim_right(Key), toOp(IsOp)};
 parse(<<16#01>>) -> {ping};
@@ -37,9 +37,9 @@ parse(<<16#0e, Reason:?STR_SIZE/binary>>) ->
 parse(<<16#0f, UserType>>) -> {user_type_up, toOp(UserType)};
 parse(_) -> undefined.
 
-%=================%
+% =============== %
 % Packet Building %
-%=================%
+% =============== %
 -spec build(tuple()) -> binary().
 build({id, Name, MOTD, IsOp}) ->
 	PaddedName = bin_pad(Name),
@@ -81,9 +81,9 @@ build({user_type_up, IsOp}) ->
 	<<16#0f, PlayerType>>;
 build(_) -> undefined.
 
-%%%%%%%%%%%%%
+% ========= %
 % Utilities %
-%%%%%%%%%%%%%
+% ========= %
 -type reason() :: distance | tile | clicking | lag.
 -type mode()   :: created | destroyed.
 

@@ -12,10 +12,11 @@ check:
   stage: check
   script:
     - rebar3-25 xref
-    - rebar3-25 gradualizer
+    - rebar3-25 dialyzer
 
 test:
   stage: test
   script:
     - rebar3-25 proper
+    - rebar3-25 eunit
     - rebar3-25 ct

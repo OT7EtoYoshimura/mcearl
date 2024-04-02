@@ -5,14 +5,12 @@
 -define(SERVER, ?MODULE).
 -define(MINUTE, 60*1000).
 
-start_link(MaxUsers, Name) -> gen_server:start_link({local, ?SERVER}, ?MODULE, [MaxUsers, Name], []).
-
 init([MaxUsers, Name]) ->
-	process_flag(trap_exit, true),
 	Salt = salt(),
-	timer:send_after(?MINUTE, heartbeat),
+	timer:send_interval(?MINUTE, heartbeat),
 	{ok, #state{maxusr=MaxUsers, name=Name, salt=Salt, users=0}}.
 
+start_link(MaxUsers, Name)          -> gen_server:start_link({local, ?SERVER}, ?MODULE, [MaxUsers, Name], []).
 handle_call(_Request, _From, State) -> {reply, ok, State}.
 handle_cast(_Msg, State)            -> {noreply, State}.
 handle_info(heartbeat, State = #state{maxusr=MaxUsers, name=Name, salt=Salt, users=Users}) ->

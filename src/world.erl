@@ -15,7 +15,8 @@ read(FileName) ->
 		)
 	} = NBT,
 	{PaddingLen, Chunks} = prepare(BlockArr),
-	{PaddingLen, Chunks, X, Y, Z}.
+	DataPkts = data_pkts(PaddingLen, Chunks),
+	{DataPkts, X, Y, Z}.
 
 % Before being sent to the client:
 %	- it is prefixed with its length as a big-endian int (4 bytes)
@@ -41,3 +42,15 @@ chunksOf(Len, <<>>, Acc) ->
 chunksOf(Len, List, Acc) ->
 	{Head, Tail} = split_binary(List, Len),
 	chunksOf(Len, Tail, [Head | Acc]).
+
+data_pkts(PaddingLen, Chunks) ->
+	ChunksCnt = length(Chunks),
+	EnumChunks = lists:enumerate(Chunks),
+	lists:map(
+		fun({N, Chunk}) when N =:= ChunksCnt ->
+			protocol:build({lvl_data, 1024 - PaddingLen, Chunk, 100});
+		   ({N, Chunk}) ->
+			protocol:build({lvl_data, 1024, Chunk, round(N / ChunksCnt * 100)})
+		end,
+		EnumChunks
+	 ).

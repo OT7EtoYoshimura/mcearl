@@ -7,7 +7,6 @@
 -define(PORT, 25565).
 
 init([]) ->
-%	process_flag(trap_exit, true),
 	Opts = [ binary
 	       , {packet, 2}
 	       , {reuseaddr, true}

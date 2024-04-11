@@ -20,8 +20,8 @@ init([Name, MOTD]) ->
 	{ok, #state{name=list_to_binary(Name), motd=list_to_binary(MOTD)}}.
 handle_call(_Req, _From, State) -> {reply, ok, State}.
 
-handle_cast({pg, Pkt}, State) ->
-	respond(Pkt, State),
+handle_cast({pg, Pkt}, #state{socket=Socket} = State) ->
+	gen_tcp:send(Socket, Pkt),
 	{noreply, State};
 handle_cast(ping, #state{socket=Socket} = State) ->
 	PingPkt = protocol:build({ping}),
@@ -39,9 +39,9 @@ handle_info({tcp, Socket, Msg}, #state{socket=Socket} = State) ->
 	respond(Pkt, State),
 	inet:setopts(Socket, [{active, once}]),
 	{noreply, State};
-handle_info({tcp_closed, _Socket}, State) ->
+handle_info({tcp_closed, Socket}, #state{socket=Socket} = State) ->
 	{stop, normal, State};
-handle_info(Info, State) -> {noreply, State}.
+handle_info(_Info, State) -> {noreply, State}.
 
 terminate(_Rsn, _State)              -> ok.
 code_change(_OldVsn, State, _Extra)  -> {ok, State}.
@@ -52,16 +52,16 @@ code_change(_OldVsn, State, _Extra)  -> {ok, State}.
 respond({id, _PlayerName, _VerKey, _IsOp}, #state{socket=Socket, name=Name, motd=MOTD}) ->
 	gen_tcp:send(Socket, protocol:build({id, Name, MOTD, false})),
 	gen_tcp:send(Socket, protocol:build({lvl_init})),
-	DataPkts = world_serv:data_pkts(),
-	lists:map(fun(DataPkt) -> gen_tcp:send(Socket, DataPkt) end, DataPkts);
-respond({set_block_m, _X, _Y, _Z, _Mode, _BlockType} = Pkt, _State) ->
-	pg_send(Pkt);
-respond({pos_and_orient, _PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Heading}, #state{id=Id} = _State) ->
-	pg_send({pos_and_orient, Id, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Heading});
-respond({msg, _PlayerId, Msg}, #state{id=Id} = _State) ->
-	pg_send({msg, Id, Msg});
-respond(undefined, _State) ->
-	logger:notice("Undefined packet").
+	{DataPkts, X, Y, Z} = world_serv:data_pkts(),
+	lists:map(fun(DataPkt) -> gen_tcp:send(Socket, DataPkt) end, DataPkts),
+	gen_tcp:send(Socket, protocol:build({lvl_fin, X, Y, Z})) ;
+respond({set_block_m, X, Y, Z, _Mode, BlockType}, _State) ->
+	pg_send(protocol:build({set_block, X, Y, Z, BlockType}));
+respond({pos_and_orient, _PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Heading}, #state{id=Id}) ->
+	pg_send(protocol:build({pos_and_orient, Id, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Heading}));
+respond({msg, _PlayerId, Msg}, #state{id=Id}) ->
+	pg_send(protocol:build({msg, Id, Msg}));
+respond(undefined, _State) -> ok.
 
 pg_send(Pkt) ->
 	lists:map(

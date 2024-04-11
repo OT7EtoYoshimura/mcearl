@@ -47,9 +47,9 @@ handle_call(data_pkts, _From, #state{arr=BlockArr, x=X, y=Y, z=Z} = State) ->
 		end,
 		EnumChunks
 	),
-	{reply, DataPkts, State};
+	{reply, {DataPkts, X, Y, Z}, State};
 handle_call(_Req, _From, State)     -> {reply, ok, State}.
-handle_cast({pg, Pkt}, State)       -> {noreply, State};
+handle_cast({pg, _Pkt}, State)      -> {noreply, State};
 handle_cast(_Msg, State)            -> {noreply, State}.
 handle_info(_Info, State)           -> {noreply, State}.
 terminate(_Rsn, _State)             -> ok.
@@ -65,7 +65,7 @@ chunksOf(Len, Bin) ->
 	end,
 	Padding = binary:copy(<<16#00>>, PaddingLen),
 	{PaddingLen, chunksOf(Len, <<Bin/binary, Padding/binary>>, [])}.
-chunksOf(Len, <<>>, Acc) ->
+chunksOf(_Len, <<>>, Acc) ->
 	lists:reverse(Acc);
 chunksOf(Len, List, Acc) ->
 	{Head, Tail} = split_binary(List, Len),

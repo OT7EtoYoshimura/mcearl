@@ -38,7 +38,7 @@ handle_cast({accept, AcceptSocket}, #state{taken=Taken, avail=Avail} = State) ->
 handle_cast(_Msg, State)            -> {noreply, State}.
 handle_info({'DOWN', Ref, process, _Pid, _Info}, #state{taken=Taken, avail=Avail} = State) ->
 	Id = proplists:get_value(Ref, Taken),
-	NewTaken = proplsits:delete(Ref, Taken),
+	NewTaken = proplists:delete(Ref, Taken),
 	{noreply, State#state{taken=NewTaken, avail=[Id|Avail]}};
 handle_info(_Info, State)           -> {noreply, State}.
 terminate(_Rsn, _State)             -> ok.
@@ -50,8 +50,8 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 listen(ListenSocket) ->
 	case gen_tcp:accept(ListenSocket) of
 		{ok, AcceptSocket} ->
-			gen_tcp:controlling_process(AcceptSocket, ?SERVER),
-			gen_server:cast({accept, AcceptSocket}),
+			gen_tcp:controlling_process(AcceptSocket, whereis(?SERVER)),
+			gen_server:cast(?SERVER, {accept, AcceptSocket}),
 			listen(ListenSocket);
 		{error, Rsn} -> {stop, Rsn}
 	end.

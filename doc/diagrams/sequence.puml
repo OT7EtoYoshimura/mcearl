@@ -1,0 +1,29 @@
+@startuml
+
+actor player as player
+
+box "McEarl"
+participant player_man
+participant player_serv
+participant world_serv
+end box
+database mnesia as mnesia
+
+player -> player_man : connect
+player_man -> player_serv : delegate
+player -> player_serv : id
+
+group Identification [successful]
+	player_serv -> player : id
+else failure
+	player_serv -> player : disconnect
+end
+
+loop 
+	player_serv <-> player : communicate
+	player_serv <-> player_serv : update
+	player_serv -> world_serv : update
+	world_serv -> mnesia : write to
+end
+
+@enduml

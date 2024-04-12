@@ -14,7 +14,8 @@ start_link(Port) -> gen_server:start_link({local, ?SERVER}, ?MODULE, [Port], [])
 % Callbacks %
 % ========= %
 init([Port])
-	-> Opts =
+	-> process_flag(trap_exit, true)
+	,  Opts =
 		[ binary
 %		, {packet, 2}
 		, {reuseaddr, true}
@@ -29,20 +30,20 @@ init([Port])
 	,  {ok, #state{}}
 	.
 
-handle_call(_Req, _From, State)     -> {reply, ok, State}.
+handle_call(_Req, _From, State) -> {reply, ok, State}.
 handle_cast({accept, AcceptSocket}, #state{taken=Taken, avail=Avail} = State)
 	-> {ok, Pid} = player_sup:start_player()
-	, gen_tcp:controlling_process(AcceptSocket, Pid)
-	, {[Id], NewAvail} = lists:split(1, Avail)
-	, player_serv:accept(Pid, AcceptSocket, Id)
-	, Ref = monitor(process, Pid)
-	, {noreply, State#state{taken=[{Ref, Id}|Taken], avail=NewAvail}}
+	,  gen_tcp:controlling_process(AcceptSocket, Pid)
+	,  {[Id], NewAvail} = lists:split(1, Avail)
+	,  player_serv:accept(Pid, AcceptSocket, Id)
+	,  Ref = monitor(process, Pid)
+	,  {noreply, State#state{taken=[{Ref, Id}|Taken], avail=NewAvail}}
 	;
 handle_cast(_Msg, State)            -> {noreply, State}.
 handle_info({'DOWN', Ref, process, _Pid, _Info}, #state{taken=Taken, avail=Avail} = State)
 	-> Id = proplists:get_value(Ref, Taken)
-	, NewTaken = proplists:delete(Ref, Taken)
-	, {noreply, State#state{taken=NewTaken, avail=[Id|Avail]}}
+	,  NewTaken = proplists:delete(Ref, Taken)
+	,  {noreply, State#state{taken=NewTaken, avail=[Id|Avail]}}
 	;
 handle_info(_Info, State)           -> {noreply, State}.
 terminate(_Rsn, _State)             -> ok.

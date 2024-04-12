@@ -14,11 +14,11 @@ parse(<<16#03, Length:16/signed, Data:1024/binary, PercComp>>)                  
 parse(<<16#04, XSize:16/signed, YSize:16/signed, ZSize:16/signed>>)                                                                             -> {lvl_fin, XSize, YSize, ZSize};
 parse(<<16#05, X:16/signed, Y:16/signed, Z:16/signed, Mode, BlockType>>)                                                                        -> {set_block_m, X, Y, Z, toMode(Mode), BlockType};
 parse(<<16#06, X:16/signed, Y:16/signed, Z:16/signed, BlockType>>)                                                                              -> {set_block, X, Y, Z, BlockType};
-parse(<<16#07, PlayerId/signed, Name:?STR_SIZE/binary, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>) -> {spawn, PlayerId, bin_trim_right(Name), {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch};
-parse(<<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>)                        -> {pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch};
-parse(<<16#09, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5, Yaw, Pitch>>)                           -> {pos_and_orient_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch};
+parse(<<16#07, PlayerId/signed, Name:?STR_SIZE/binary, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Heading, Pitch>>) -> {spawn, PlayerId, bin_trim_right(Name), {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch};
+parse(<<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Heading, Pitch>>)                        -> {pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch};
+parse(<<16#09, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5, Heading, Pitch>>)                           -> {pos_and_orient_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch};
 parse(<<16#0a, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5>>)                                       -> {pos_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}};
-parse(<<16#0b, PlayerId/signed, Yaw, Pitch>>)                                                                                                   -> {orient_up, PlayerId, Yaw, Pitch};
+parse(<<16#0b, PlayerId/signed, Heading, Pitch>>)                                                                                                   -> {orient_up, PlayerId, Heading, Pitch};
 parse(<<16#0c, PlayerId/signed>>)                                                                                                               -> {despawn, PlayerId};
 parse(<<16#0d, PlayerId/signed, Message:?STR_SIZE/binary>>)                                                                                     -> {msg, PlayerId, bin_trim_right(Message)};
 parse(<<16#0e, Reason:?STR_SIZE/binary>>)                                                                                                       -> {disconnect, toReason(Reason)};
@@ -44,14 +44,14 @@ build({set_block_m, X, Y, Z, Mode, BlockType})
 	,  <<16#05, X:16/signed, Y:16/signed, Z:16/signed, ModeBin, BlockType>>
 	;
 build({set_block, X, Y, Z, BlockType})                                                        -> <<16#06, X:16/signed, Y:16/signed, Z:16/signed, BlockType>>;
-build({spawn, PlayerId, Name, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch})
+build({spawn, PlayerId, Name, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch})
 	-> PaddedName = bin_pad(Name)
-	,  <<16#07, PlayerId/signed, PaddedName/binary, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>
+	,  <<16#07, PlayerId/signed, PaddedName/binary, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Heading, Pitch>>
 	;
-build({pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch})    -> <<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Yaw, Pitch>>;
-build({pos_and_orient_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Yaw, Pitch}) -> <<16#09, PlayerId/signed, XInt:3, XFrac:5, YInt:3, YFrac:5, ZInt:3, ZFrac:5, Yaw, Pitch>>;
+build({pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch})    -> <<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Heading, Pitch>>;
+build({pos_and_orient_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch}) -> <<16#09, PlayerId/signed, XInt:3, XFrac:5, YInt:3, YFrac:5, ZInt:3, ZFrac:5, Heading, Pitch>>;
 build({pos_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}})                        -> <<16#0a, PlayerId/signed, XInt:3, XFrac:5, YInt:3, YFrac:5, ZInt:3, ZFrac:5>>;
-build({orient_up, PlayerId, Yaw, Pitch})                                                      -> <<16#0b, PlayerId/signed, Yaw, Pitch>>;
+build({orient_up, PlayerId, Heading, Pitch})                                                      -> <<16#0b, PlayerId/signed, Heading, Pitch>>;
 build({despawn, PlayerId})                                                                    -> <<16#0c, PlayerId/signed>>;
 build({msg, PlayerId, Message})
 	-> PaddedMessage = bin_pad(Message)

@@ -21,20 +21,20 @@ init(_Args)
 	,  GunzippedFile = zlib:gunzip(File)
 	,  {ok, NBT} = erl_nbt:decode(GunzippedFile)
 	,  #{"ClassicWorld" :=
-		#{"X" := {short, XSize}
-		, "Y" := {short, YSize}
-		, "Z" := {short, ZSize}
+		#{"X" := {short, XSi}
+		, "Y" := {short, YSi}
+		, "Z" := {short, ZSi}
 		, "BlockArray" := {byte_array, BlockArr}
 		, "Spawn" :=
-			#{"X" := {short, XSpawn}
-			, "Y" := {short, YSpawn}
-			, "Z" := {short, ZSpawn}
-			, "H" := {byte, HSpawn}
-			, "P" := {byte, PSpawn}
+			#{"X" := {short, XSp}
+			, "Y" := {short, YSp}
+			, "Z" := {short, ZSp}
+			, "H" := {byte, HSp}
+			, "P" := {byte, PSp}
 			}
 		}
 	} = NBT
-	,  {ok, #state{arr=BlockArr, sizes={XSize, YSize, ZSize}, spawn={XSpawn, YSpawn, ZSpawn, HSpawn, PSpawn}}}
+	,  {ok, #state{arr=BlockArr, sizes={XSi, YSi, ZSi}, spawn={XSp, YSp, ZSp, HSp, PSp}}}
 	.
 
 handle_call(data_pkts, _From, #state{arr=BlockArr, sizes=Sizes, spawn=Spawn} = State)
@@ -56,7 +56,7 @@ handle_call(data_pkts, _From, #state{arr=BlockArr, sizes=Sizes, spawn=Spawn} = S
 	,  {reply, {DataPkts, Sizes, Spawn}, State}
 	;
 handle_call(_Req, _From, State)     -> {reply, ok, State}.
-handle_cast({pg, _Pkt}, State)      -> {noreply, State};
+handle_cast({pg, _Pkts}, State)     -> {noreply, State};
 handle_cast(_Msg, State)            -> {noreply, State}.
 handle_info(_Info, State)           -> {noreply, State}.
 terminate(_Rsn, _State)             -> ok.

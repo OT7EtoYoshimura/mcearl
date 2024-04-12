@@ -13,25 +13,10 @@ Dependencies
 * plantuml (optional; documentation)
 * inotify-tools (optional; code reload)
 
-Build & Documentation
+Build -> Check -> Test
 ----
-```
-$ rebar3 compile
-$ rebar3 edoc
-```
+    $ rebar3 all
 
-Type and cross-referency checks
+Run
 ----
-```
-$ rebar3 dialyzer
-$ rebar3 xref
-```
-
-Tests
-----
-```
-$ rebar3 eunit --cover
-$ rebar3 ct --cover
-$ rebar3 proper --cover
-$ rebar3 cover --verbose
-```
+    $ rebar3 auto

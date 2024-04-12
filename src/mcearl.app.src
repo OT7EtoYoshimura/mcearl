@@ -7,5 +7,5 @@
   {links, []},
   {applications, [kernel, stdlib, mnesia, inets]},
   {registered, [mcearl_app, mcearl_sup, heartbeat_serv, world_serv, player_man, player_sup]},
-  {modules, [mcearl_app, mcearl_sup, heartbeat_serv, world_serv, player_man, player_sup, player_serv, protocol]}
+  {modules, [mcearl_app, mcearl_sup, heartbeat_serv, world_serv, player_man, player_sup, player_serv, protocol_lib]}
  ]}.

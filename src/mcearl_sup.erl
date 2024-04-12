@@ -7,6 +7,7 @@
 -define(NAME, "Testing...").
 -define(MOTD, "Test MOTD").
 -define(PORT, 25565).
+-define(WORLD, "priv/world.cw").
 
 % === %
 % API %
@@ -27,7 +28,7 @@ init([])
 			, start    => {pg, start_link, []}
 		  	}
 		,	#{id       => world_serv
-			, start    => {world_serv, start_link, []}
+			, start    => {world_serv, start_link, [?WORLD]}
 			, restart  => permanent
 			, shutdown => 2000
 			, type     => worker

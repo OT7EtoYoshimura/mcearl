@@ -69,7 +69,7 @@ respond({id, UserName, _VerKey, _IsOp}, #state{socket=Socket, name=Name, motd=MO
 		, protocol_lib:build({msg, 0, <<"&5", UserName/binary, " &ehas just joined!">>})
 		}
 	)
-	,  [gen_tcp:send(protocol_lib:build({spawn, Id, UserName, {X, 0}, {Y, 0}, {Z, 0}, H, P})) || {Id, UserName, {X, Y, Z, H, P}} <- Res]
+	,  [gen_tcp:send(Socket, protocol_lib:build({spawn, Id, UserName, {X, 0}, {Y, 0}, {Z, 0}, H, P})) || {Id, UserName, {X, Y, Z, H, P}} <- Res]
 	,  State#state{username=UserName, pos={XSp, YSp, ZSp, HSp, PSp}}
 	;
 respond({set_block_m, X, Y, Z, _Mode, BlockType}, State)

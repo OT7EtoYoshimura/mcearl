@@ -23,10 +23,8 @@ init([Port])
 		, {backlog, 30}
 		, {active, false}
 		]
-	,  case gen_tcp:listen(Port, Opts) of
-		{ok, ListenSocket} -> spawn_link(fun() -> listen(ListenSocket) end);
-		{error, Rsn}       -> {stop, Rsn}
-	end
+	,  {ok, ListenSocket} = gen_tcp:listen(Port, Opts)
+	,  spawn_link(fun() -> listen(ListenSocket) end)
 	,  {ok, #state{}}
 	.
 

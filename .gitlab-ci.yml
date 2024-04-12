@@ -17,6 +17,7 @@ check:
 test:
   stage: test
   script:
-    - rebar3-25 proper
-    - rebar3-25 eunit
-    - rebar3-25 ct
+    - rebar3-25 eunit --cover
+    - rebar3-25 ct --cover
+    - rebar3-25 proper --cover
+    - rebar3-25 cover --verbose

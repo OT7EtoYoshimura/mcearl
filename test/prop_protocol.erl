@@ -27,7 +27,7 @@ prop_user_type_up() -> invertible({user_type_up, boolean()}).
 invertible(Data) ->
 	proper:forall(
 		Data,
-		fun(Pkt) -> Pkt =:= protocol:parse(protocol:build(Pkt)) end
+		fun(Pkt) -> Pkt =:= protocol_lib:parse(protocol_lib:build(Pkt)) end
 	).
 
 %%%%%%%%%%%%%%%%%%

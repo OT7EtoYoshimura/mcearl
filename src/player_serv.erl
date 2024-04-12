@@ -36,7 +36,7 @@ handle_cast({pg, Pkt}, #state{socket=Socket} = State)
 handle_cast({accept, Socket, Pid, Id}, State)
 	-> inet:setopts(Socket, [{active, once}, binary])
 	,  {ok, {IP, _Port}} = inet:peername(Socket)
-	,  timer:apply_repeatedly(?MINUTE, gen_tcp, send, [Socket, protocol_lib:build({ping})])
+	,  timer:apply_interval(?MINUTE, gen_tcp, send, [Socket, protocol_lib:build({ping})])
 	,  {noreply, State#state{socket=Socket, ip=IP, pid=Pid, id=Id}}
 	;
 handle_cast(_Msg, State) -> {noreply, State}.

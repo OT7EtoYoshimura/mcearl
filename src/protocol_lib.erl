@@ -1,11 +1,24 @@
 -module(protocol_lib).
--export([parse/1, build/1]).
+-export([parse_toc/1, parse/1, build/1]).
 
 -define(STR_SIZE, 64).
 
 % ============== %
 % Packet Parsing %
 % ============== %
+parse_toc(Pkt) -> parse_toc(Pkt, []).
+parse_toc(<<>>, Acc) -> Acc;
+parse_toc(<<16#00, 16#7, Name:?STR_SIZE/binary, Key:?STR_SIZE/binary, IsOp, Rest/binary>>, Acc) ->
+	parse_toc(Rest, [{id, bin_trim_right(Name), bin_trim_right(Key), toOp(IsOp)} | Acc]);
+parse_toc(<<16#05, X:16/signed, Y:16/signed, Z:16/signed, Mode, BlockType, Rest/binary>>, Acc) ->
+	parse_toc(Rest, [{set_block_m, X, Y, Z, toMode(Mode), BlockType} | Acc]);
+parse_toc(<<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Heading, Pitch, Rest/binary>>, Acc) ->
+	parse_toc(Rest, [{pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch} | Acc]);
+parse_toc(<<16#0d, PlayerId/signed, Message:?STR_SIZE/binary, Rest/binary>>, Acc) ->
+	parse_toc(Rest, [{msg, PlayerId, bin_trim_right(Message)} | Acc]);
+parse_toc(Bin, Acc) -> [{undefined, Bin} | Acc].
+
+
 -spec parse(binary()) -> tuple() | undefined.
 parse(<<16#00, 16#7, Name:?STR_SIZE/binary, Key:?STR_SIZE/binary, IsOp>>)                                                                       -> {id, bin_trim_right(Name), bin_trim_right(Key), toOp(IsOp)};
 parse(<<16#01>>)                                                                                                                                -> {ping};

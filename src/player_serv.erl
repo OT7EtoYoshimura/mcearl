@@ -44,10 +44,19 @@ handle_cast({accept, Socket, Pid, Id}, State)
 handle_cast(_Msg, State) -> {noreply, State}.
 
 handle_info({tcp, Socket, Msg}, #state{socket=Socket, id=Id} = State)
-	-> Pkt = protocol_lib:parse(Msg)
-	,  logger:notice("Received packet: ~p~nFrom: ~p~n", [Pkt, Id])
-	,  NewState = respond(Pkt, State)
-	,  inet:setopts(Socket, [{active, once}])
+	-> NewState = lists:foldl(
+		fun(Pkt, State)
+			-> logger:notice("Received packet: ~p~nFrom: ~p~n", [Pkt, Id])
+			,  inet:setopts(Socket, [{active, once}])
+			,  respond(Pkt, State)
+			;
+		   ({undefined, Bin}, State)
+			-> logger:notice("Could not parse packet:~n~p~nFrom: ~p~n", [Bin, Id])
+			,  inet:setopts(Socket, [{active, once}])
+		end
+		, State
+		, protocol_lib:parse_toc(Msg)
+	)
 	,  {noreply, NewState}
 	;
 handle_info({tcp_closed, Socket}, #state{socket=Socket} = State) -> {stop, normal, State};

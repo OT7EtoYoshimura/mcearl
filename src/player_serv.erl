@@ -80,8 +80,10 @@ respond({pos_and_orient, _Id, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Headi
 	-> pg_cast(protocol_lib:build({pos_and_orient, Id, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch}))
 	,  State#state{pos={XInt, YInt, ZInt, Heading, Pitch}}
 	;
-respond({msg, _Id, Msg}, #state{id=Id} = State)
-	-> pg_cast(protocol_lib:build({msg, Id, Msg}))
+respond({msg, _Id, Msg}, #state{socket=Socket, id=Id, username=UserName} = State)
+	-> PrependedMessage = <<"<", UserName/binary, ">: ", Msg/binary>>
+	,  pg_cast(protocol_lib:build({msg, Id, PrependedMessage}))
+	,  gen_tcp:send(Socket, protocol_lib:build({msg, -1, PrependedMessage}))
 	,  State
 	;
 respond(undefined, State) -> State.

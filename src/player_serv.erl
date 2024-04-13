@@ -25,12 +25,14 @@ handle_call({pg, {spawned, SpawnPkt, MsgPkt}}, From, #state{socket=Socket, id=Id
 	-> gen_server:reply(From, {Id, UserName, Pos})
 	,  gen_tcp:send(Socket, SpawnPkt)
 	,  gen_tcp:send(Socket, MsgPkt)
+	,  logger:notice("PG Sent packets to: ~p~n~p~n~p~n", [Id, protocol_lib:parse(SpawnPkt), protocol_lib:parse(MsgPkt)])
 	,  {noreply, State}
 	;
 handle_call(_Req, _From, State) -> {reply, ok, State}.
 
-handle_cast({pg, Pkt}, #state{socket=Socket} = State)
+handle_cast({pg, Pkt}, #state{socket=Socket, id=Id} = State)
 	-> gen_tcp:send(Socket, Pkt)
+	,  logger:notice("PG Sent packet: ~p~nTo: ~p~n", [protocol_lib:parse(Pkt), Id])
 	,  {noreply, State}
 	;
 handle_cast({accept, Socket, Pid, Id}, State)
@@ -41,8 +43,10 @@ handle_cast({accept, Socket, Pid, Id}, State)
 	;
 handle_cast(_Msg, State) -> {noreply, State}.
 
-handle_info({tcp, Socket, Msg}, #state{socket=Socket} = State)
-	-> NewState = respond(protocol_lib:parse(Msg), State)
+handle_info({tcp, Socket, Msg}, #state{socket=Socket, id=Id} = State)
+	-> Pkt = protocol_lib:parse(Msg)
+	,  logger:notice("Received packet: ~p~nFrom: ~p~n", [Pkt, Id])
+	,  NewState = respond(Pkt, State)
 	,  inet:setopts(Socket, [{active, once}])
 	,  {noreply, NewState}
 	;
@@ -56,20 +60,20 @@ code_change(_OldVsn, State, _Extra)  -> {ok, State}.
 % Utilities %
 % ========= %
 respond({id, UserName, _VerKey, _IsOp}, #state{socket=Socket, name=Name, motd=MOTD, id=Id} = State)
-	-> gen_tcp:send(Socket, protocol_lib:build({id, Name, MOTD, false}))
-	,  gen_tcp:send(Socket, protocol_lib:build({lvl_init}))
+	-> send_packet(State, {id, Name, MOTD, false})
+	,  send_packet(State, {lvl_init})
 	,  {DataPkts, {XSi, YSi, ZSi}, {XSp, YSp, ZSp, HSp, PSp}} = world_serv:data_pkts()
 	,  [gen_tcp:send(Socket, DataPkt) || DataPkt <- DataPkts]
-	,  gen_tcp:send(Socket, protocol_lib:build({lvl_fin, XSi, YSi, ZSi}))
-	,  gen_tcp:send(Socket, protocol_lib:build({spawn, -1, UserName, {XSp, 0}, {YSp, 0}, {ZSp, 0}, HSp, PSp}))
-	,  gen_tcp:send(Socket, protocol_lib:build({msg, 0, <<"&eWelcome to the server!">>}))
+	,  send_packet(State, {lvl_fin, XSi, YSi, ZSi})
+	,  send_packet(State, {spawn, -1, UserName, {XSp, 0}, {YSp, 0}, {ZSp, 0}, HSp, PSp})
+	,  send_packet(State, {msg, 0, <<"&eWelcome to the server!">>})
 	,  Res = pg_call(
 		{spawned
 		, protocol_lib:build({spawn, Id, UserName, {XSp, 0}, {YSp, 0}, {ZSp, 0}, HSp, PSp})
 		, protocol_lib:build({msg, 0, <<"&5", UserName/binary, " &ehas just joined!">>})
 		}
 	)
-	,  [gen_tcp:send(Socket, protocol_lib:build({spawn, Id, UserName, {X, 0}, {Y, 0}, {Z, 0}, H, P})) || {Id, UserName, {X, Y, Z, H, P}} <- Res]
+	,  [send_packet(State, {spawn, Id, UserName, {X, 0}, {Y, 0}, {Z, 0}, H, P}) || {Id, UserName, {X, Y, Z, H, P}} <- Res]
 	,  State#state{username=UserName, pos={XSp, YSp, ZSp, HSp, PSp}}
 	;
 respond({set_block_m, X, Y, Z, _Mode, BlockType}, State)
@@ -83,10 +87,15 @@ respond({pos_and_orient, _Id, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Headi
 respond({msg, _Id, Msg}, #state{socket=Socket, id=Id, username=UserName} = State)
 	-> PrependedMessage = <<"<", UserName/binary, ">: ", Msg/binary>>
 	,  pg_cast(protocol_lib:build({msg, Id, PrependedMessage}))
-	,  gen_tcp:send(Socket, protocol_lib:build({msg, -1, PrependedMessage}))
+	,  send_packet(State, {msg, -1, PrependedMessage})
 	,  State
 	;
 respond(undefined, State) -> State.
 
 pg_call(Msg) -> [gen_server:call(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(updates))].
 pg_cast(Msg) -> [gen_server:cast(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(updates))].
+
+send_packet(#state{socket=Socket, id=Id}, PktTuple)
+	-> gen_tcp:send(Socket, protocol_lib:build(PktTuple))
+	,  logger:notice("Sent packet: ~p~nTo: ~p~n", [PktTuple, Id])
+	.

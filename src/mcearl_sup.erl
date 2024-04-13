@@ -26,7 +26,7 @@ init([])
 	,  ChildSpecs =
 		[	#{id       => my_pg
 			, start    => {pg, start_link, []}
-		  	}
+			}
 		,	#{id       => world_serv
 			, start    => {world_serv, start_link, [?WORLD]}
 			, restart  => permanent
@@ -54,7 +54,7 @@ init([])
 			, shutdown => 2000
 			, type     => supervisor
 			, modules  => [player_sup]
-		  	}
+			}
 		]
 	,  {ok, {SupFlags, ChildSpecs}}
 	.

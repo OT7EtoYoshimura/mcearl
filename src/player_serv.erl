@@ -20,7 +20,7 @@ init([Name, MOTD])
 	,  {ok, #state{name=list_to_binary(Name), motd=list_to_binary(MOTD)}}
 	.
 
-handle_call({pg, spawned, SpawnPkt, MsgPkt}, From, #state{socket=Socket, id=Id, username=UserName, pos=Pos} = State)
+handle_call({pg, {spawned, SpawnPkt, MsgPkt}}, From, #state{socket=Socket, id=Id, username=UserName, pos=Pos} = State)
 	when Pos =/= undefined
 	-> gen_server:reply(From, {Id, UserName, Pos})
 	,  gen_tcp:send(Socket, SpawnPkt)

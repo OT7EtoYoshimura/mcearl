@@ -43,7 +43,7 @@ handle_call(data_pkts, _From, #state{arr=BlockArr, sizes=Sizes, spawn=Spawn} = S
 	,  Len = byte_size(BinArr)
 	,  PrefixedArr = <<Len:32, BinArr/binary>>
 	,  GzippedArr = zlib:gzip(PrefixedArr)
-	,  {PaddingLen, Chunks} = chunksOf(1024, GzippedArr)
+	,  {PaddingLen, Chunks} = util_lib:chunksOf(1024, GzippedArr)
 	,  ChunksCnt = length(Chunks)
 	,  EnumChunks = lists:enumerate(Chunks)
 	,  DataPkts = lists:map(
@@ -62,22 +62,3 @@ handle_cast(_Msg, State)            -> {noreply, State}.
 handle_info(_Info, State)           -> {noreply, State}.
 terminate(_Rsn, _State)             -> ok.
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
-
-% ========= %
-% Utilities %
-% ========= %
-chunksOf(Len, Bin)
-	-> PaddingLen = case byte_size(Bin) rem Len of
-		0 -> 0;
-		N -> Len - N
-	end
-	,  Padding = binary:copy(<<16#00>>, PaddingLen)
-	,  {PaddingLen, chunksOf(Len, <<Bin/binary, Padding/binary>>, [])}
-	.
-chunksOf(_Len, <<>>, Acc)
-	-> lists:reverse(Acc)
-	;
-chunksOf(Len, List, Acc)
-	-> {Head, Tail} = split_binary(List, Len)
-	,  chunksOf(Len, Tail, [Head | Acc])
-	.

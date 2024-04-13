@@ -45,14 +45,14 @@ handle_cast(_Msg, State) -> {noreply, State}.
 
 handle_info({tcp, Socket, Msg}, #state{socket=Socket, id=Id} = State)
 	-> NewState = lists:foldl(
-		fun(Pkt, State)
+		fun({undefined, Bin}, State)
+			-> logger:notice("Could not parse packet:~n~p~nFrom: ~p~n", [Bin, Id])
+			,  inet:setopts(Socket, [{active, once}])
+			, State
+		;  (Pkt, State)
 			-> logger:notice("Received packet: ~p~nFrom: ~p~n", [Pkt, Id])
 			,  inet:setopts(Socket, [{active, once}])
 			,  respond(Pkt, State)
-			;
-		   ({undefined, Bin}, State)
-			-> logger:notice("Could not parse packet:~n~p~nFrom: ~p~n", [Bin, Id])
-			,  inet:setopts(Socket, [{active, once}])
 		end
 		, State
 		, protocol_lib:parse_toc(Msg)
@@ -89,17 +89,46 @@ respond({set_block_m, X, Y, Z, _Mode, BlockType}, State)
 	-> pg_cast(protocol_lib:build({set_block, X, Y, Z, BlockType}))
 	,  State
 	;
-respond({pos_and_orient, _Id, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch}, #state{id=Id} = State)
+respond({pos_and_orient, -1, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch}, #state{id=Id} = State)
 	-> pg_cast(protocol_lib:build({pos_and_orient, Id, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch}))
 	,  State#state{pos={XInt, YInt, ZInt, Heading, Pitch}}
 	;
-respond({msg, _Id, Msg}, #state{socket=Socket, id=Id, username=UserName} = State)
-	-> PrependedMessage = <<"<", UserName/binary, ">: ", Msg/binary>>
-	,  pg_cast(protocol_lib:build({msg, Id, PrependedMessage}))
-	,  send_packet(State, {msg, -1, PrependedMessage})
+respond({msg, -1, <<"/", Rest/binary>>}, State) -> command(binary:split(Rest, <<" ">>, [global, trim_all]), State);
+respond({msg, -1, Msg}, #state{socket=Socket, id=Id, username=UserName} = State)
+	-> message(Msg, State)
 	,  State
 	;
 respond(undefined, State) -> State.
+
+message(Msg, #state{username=UserName} = State)
+	when byte_size(Msg) < (60 - byte_size(UserName))
+	-> send_msg(Msg, State)
+	;
+message(Msg, #state{username=UserName} = State)
+	-> BitOffset  = 60 - byte_size(UserName)
+	,  ByteOffset = BitOffset - (BitOffset rem 8)
+	, {First, Second} = split_binary(Msg, ByteOffset)
+	, send_msg(First, State)
+	, send_msg(Second, State)
+	.
+send_msg(Msg, #state{id=Id, username=UserName} = State)
+	-> PrependedMessage = <<"<", UserName/binary, ">: ", Msg/binary>>
+	,  pg_cast(protocol_lib:build({msg, Id, PrependedMessage}))
+	,  send_packet(State, {msg, -1, PrependedMessage})
+	.
+
+command([<<"tp">>, XBin, YBin, ZBin], #state{id=Id, pos={_,_,_,H,P}} = State)
+	-> X = util_lib:clamp(binary_to_integer(XBin), -1024, 1023)
+	,  Y = util_lib:clamp(binary_to_integer(YBin), -1024, 1024)
+	,  Z = util_lib:clamp(binary_to_integer(ZBin), -1024, 1023)
+	,  pg_cast(protocol_lib:build({pos_and_orient, id, {X, 0}, {Y, 0}, {Z,0}, H, P}))
+	,  send_packet(State, {pos_and_orient, -1, {X, 0}, {Y, 0}, {Z, 0}, H, P})
+	,  State#state{pos={X, Y, Z, H, P}}
+	;
+command(_, State)
+	-> send_packet(State, {msg, 0, "&cUnknown command."})
+	,  State
+	.
 
 pg_call(Msg) -> [gen_server:call(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(updates))].
 pg_cast(Msg) -> [gen_server:cast(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(updates))].
@@ -108,3 +137,4 @@ send_packet(#state{socket=Socket, id=Id}, PktTuple)
 	-> gen_tcp:send(Socket, protocol_lib:build(PktTuple))
 	,  logger:notice("Sent packet: ~p~nTo: ~p~n", [PktTuple, Id])
 	.
+

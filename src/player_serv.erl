@@ -121,12 +121,12 @@ command([<<"tp">>, XBin, YBin, ZBin], #state{id=Id, pos={_,_,_,H,P}} = State)
 	-> X = util_lib:clamp(binary_to_integer(XBin), -1024, 1023)
 	,  Y = util_lib:clamp(binary_to_integer(YBin), -1024, 1024)
 	,  Z = util_lib:clamp(binary_to_integer(ZBin), -1024, 1023)
-	,  pg_cast(protocol_lib:build({pos_and_orient, id, {X, 0}, {Y, 0}, {Z,0}, H, P}))
+	,  pg_cast(protocol_lib:build({pos_and_orient, Id, {X, 0}, {Y, 0}, {Z,0}, H, P}))
 	,  send_packet(State, {pos_and_orient, -1, {X, 0}, {Y, 0}, {Z, 0}, H, P})
 	,  State#state{pos={X, Y, Z, H, P}}
 	;
 command(_, State)
-	-> send_packet(State, {msg, 0, "&cUnknown command."})
+	-> send_packet(State, {msg, 0, <<"&cUnknown command.">>})
 	,  State
 	.
 

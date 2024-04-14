@@ -45,7 +45,7 @@ parse(_)-> undefined.
 build({id, Name, MOTD, IsOp})
 	-> PaddedName = util_lib:bin_pad(Name)
 	,  PaddedMOTD = util_lib:bin_pad(MOTD)
-	,  PlayerType = util_lib:fromOp(IsOp)
+	,  PlayerType = fromOp(IsOp)
 	,  <<16#00, 16#07, PaddedName/binary, PaddedMOTD/binary, PlayerType>>
 	;
 build({ping})                                                                                 -> <<16#01>>;

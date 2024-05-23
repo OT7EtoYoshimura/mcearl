@@ -18,7 +18,8 @@ data_pkts()       -> gen_server:call(?SERVER, data_pkts).
 init(World)
 	-> process_flag(trap_exit, true)
 	,  pg:join(updates, self())
-	,  {ok, File} = file:read_file(World)
+	,  FileName = filename:join(code:priv_dir(mcearl), World)
+	,  {ok, File} = file:read_file(FileName)
 	,  GunzippedFile = zlib:gunzip(File)
 	,  {ok, NBT} = erl_nbt:decode(GunzippedFile)
 	,  #{"ClassicWorld" :=

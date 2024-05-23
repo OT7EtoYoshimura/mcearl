@@ -1,0 +1,50 @@
+           McEarl
+Sprint two Delivery
+Emilia P. Stoyanova
+
+A Minecraft Classic server
+    written in Erlang/OTP
+
+Sprint Goals:
+- Do Research (First SQ)
+- Finish Architecture Document
+- Pen Analysis Document
+- Work on the implementation
+- Containerise solution (CD)
+
+Sprint Achievements:
+- Do Research (First SQ) ✗
+- Finish Architecture Document ✓
+- Pen Analysis Document ✓
+- Work on the implementation ✓ (Completed)
+- Containerise solution (CD) ✗
+
+# Project Management Overview
+
+Relevant Project Documentation
+- Project Pitch
+- Project Plan
+- Testing Plan
+- Analysis Document
+- Technical Architecture Design
+- Research Plan
+- C4 diagrams
+- Reading Guide
+- Minutes
+
+CI/CD pipeline
+
+@cicd-2.jxl
+
+Sprint Retrospective:
+- Did not do enough research this semester -> need to improve
+- Did not containerise solution -> need to look into docker seriously
+- Did complete the implementation -> very proud
+- The analysis and design documents were huge success -> keep up the good work
+- Pipeline looks good and gives ample infomration -> better than last time
+
+Next Sprint Planning:
+- Cover most if not all subquestions of the research plan
+- Contairise the program seriously
+- Do integration testing
+- Maybe look into kubernetes

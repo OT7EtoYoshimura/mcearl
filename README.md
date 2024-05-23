@@ -13,10 +13,6 @@ Dependencies
 * plantuml (optional; documentation)
 * inotify-tools (optional; code reload)
 
-Build -> Check -> Test
+Check, Test and Run
 ----
     $ rebar3 all
-
-Run
-----
-    $ rebar3 auto

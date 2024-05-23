@@ -1,0 +1,7 @@
+-sname mcearl
+
+-setcookie mcearl_cookie
+
++K true
++A30
+-pa releases/${REL_VSN}/consolidated

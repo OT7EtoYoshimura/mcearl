@@ -4,9 +4,11 @@ McEarl uses the following projects:
 
 - [Erlang/OTP](https://github.com/erlang/otp) (Apache 2.0)
 - [rebar3](https://github.com/erlang/rebar3) (Apache 2.0)
+- [proper](https://github.com/proper-testing/proper) (GPL 3.0)
+- [ranch](https://github.com/ninenines/ranch) (ISC)
 - [erlang\_base62](https://github.com/gilbertwong96/erlang_base62) (MIT)
 - [erlang\_nbt](https://github.com/hypothermic/erl_nbt) (Apache 2.0)
-- [proper](https://github.com/proper-testing/proper) (GPL 3.0)
+- [kube\_dist](https://github.com/seniverse/kube_dist) (Apache 2.0)
 
 Furthermore, I have been greatly inspired and aided by:
 

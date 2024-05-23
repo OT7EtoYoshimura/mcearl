@@ -7,7 +7,7 @@
 -define(NAME, "New server implementation test (very unstable)").
 -define(MOTD, "Test MOTD").
 -define(PORT, 25565).
--define(WORLD, "priv/world.cw").
+-define(WORLD, "world.cw").
 
 % === %
 % API %

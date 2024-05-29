@@ -1,13 +1,14 @@
--module(player_sup).
+-module(server_sup).
 -behaviour(supervisor).
--export([start_player/0, start_link/2, init/1]).
+-export([start_server/0, start_link/2]).
+-export([init/1]).
 -define(SERVER, ?MODULE).
 
 % === %
 % API %
 % === %
-start_player()         -> supervisor:start_child(?SERVER, []).
 start_link(Name, MOTD) -> supervisor:start_link({local, ?SERVER}, ?MODULE, [Name, MOTD]).
+start_server()         -> supervisor:start_child(?SERVER, []).
 
 % ========= %
 % Callbacks %
@@ -19,12 +20,12 @@ init([Name, MOTD])
 		, period    => 1
 		}
 	,  ChildSpecs = [
-		#{id       => player_serv
-		, start    => {player_serv, start_link, [Name, MOTD]}
+		#{id       => server
+		, start    => {server, start_link, [Name, MOTD]}
 		, restart  => transient
 		, shutdown => 2000
 		, type     => worker
-		, modules  => [player_serv]
+		, modules  => [server]
 		}
 	]
 	,  {ok, {SupFlags, ChildSpecs}}.

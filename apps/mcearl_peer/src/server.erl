@@ -1,78 +1,69 @@
--module(player_serv).
+-module(server).
 -behaviour(gen_server).
--export([start_link/2, accept/3]).
+-export([start_link/2, proxy/2, intro/5]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
--record(state, {socket, ip, pid, name, motd, id, username, pos}).
+-record(state, {name, motd, ip, proxy, controller, id, username, pos}).
 -define(MINUTE, 60*1000).
 
 % === %
 % API %
 % === %
-start_link(Name, MOTD)  -> gen_server:start_link(?MODULE, [Name, MOTD], []).
-accept(Pid, Socket, Id) -> gen_server:cast(Pid, {accept, Socket, Pid, Id}).
+start_link(Name, MOTD)    -> gen_server:start_link(?MODULE, [Name, MOTD], []).
+proxy(Pid, Data)          -> gen_server:cast(Pid, {proxy, Data}).
+intro(Pid, Id, Ip, Proxy, Controller) -> gen_server:cast(Pid, {intro, Id, Ip, Proxy, Controller}).
 
 % ========= %
 % Callbacks %
 % ========= %
 init([Name, MOTD])
-	-> process_flag(trap_exit, true)
-	,  pg:join(updates, self())
+	-> pg:join(node(), servers, self())
+	,  gen_server:cast({global, heartbeat}, alive)
 	,  {ok, #state{name=list_to_binary(Name), motd=list_to_binary(MOTD)}}
 	.
 
-handle_call({pg, {spawned, SpawnPkt, MsgPkt}}, From, #state{socket=Socket, id=Id, username=UserName, pos=Pos} = State)
+handle_call({pg, {spawned, SpawnPkt, MsgPkt}}, From, #state{id=Id, username=UserName, pos=Pos} = State)
 	when Pos =/= undefined
 	-> gen_server:reply(From, {Id, UserName, Pos})
-	,  gen_tcp:send(Socket, SpawnPkt)
-	,  gen_tcp:send(Socket, MsgPkt)
-	,  logger:notice("PG Sent packets to: ~p~n~p~n~p~n", [Id, protocol_lib:parse(SpawnPkt), protocol_lib:parse(MsgPkt)])
+	,  send_packet(State, SpawnPkt)
+	,  send_packet(State, MsgPkt)
 	,  {noreply, State}
 	;
-handle_call(_Req, _From, State) -> {reply, ok, State}.
+handle_call(_Req, _From, State)     -> {reply, ok, State}.
 
-handle_cast({pg, Pkt}, #state{socket=Socket, id=Id} = State)
-	-> gen_tcp:send(Socket, Pkt)
-	,  logger:notice("PG Sent packet: ~p~nTo: ~p~n", [protocol_lib:parse(Pkt), Id])
-	,  {noreply, State}
-	;
-handle_cast({accept, Socket, Pid, Id}, State)
-	-> inet:setopts(Socket, [{active, once}, binary])
-	,  {ok, {IP, _Port}} = inet:peername(Socket)
-	,  timer:apply_interval(?MINUTE, gen_tcp, send, [Socket, protocol_lib:build({ping})])
-	,  {noreply, State#state{socket=Socket, ip=IP, pid=Pid, id=Id}}
-	;
-handle_cast(_Msg, State) -> {noreply, State}.
-
-handle_info({tcp, Socket, Msg}, #state{socket=Socket, id=Id} = State)
-	-> NewState = lists:foldl(
-		fun({undefined, Bin}, State)
-			-> logger:notice("Could not parse packet:~n~p~nFrom: ~p~n", [Bin, Id])
-			,  inet:setopts(Socket, [{active, once}])
-			, State
-		;  (Pkt, State)
-			-> logger:notice("Received packet: ~p~nFrom: ~p~n", [Pkt, Id])
-			,  inet:setopts(Socket, [{active, once}])
-			,  respond(Pkt, State)
-		end
+handle_cast({proxy, Data}, State)
+	-> NewState = lists:foldl
+		(fun(Pkt, State) -> respond(Pkt, State) end
 		, State
-		, protocol_lib:parse_toc(Msg)
-	)
-	,  {noreply, NewState}
+		, protocol_lib:parse_toc(Data)
+		)
+	, {noreply, NewState}
 	;
-handle_info({tcp_closed, Socket}, #state{socket=Socket} = State) -> {stop, normal, State};
-handle_info(_Info, State)                                        -> {noreply, State}.
+handle_cast({pg, Pkt}, State)
+	-> send_packet(State, Pkt)
+	,  {noreply, State}
+	;
+handle_cast(ping, State)
+	-> send_packet(State, {ping})
+	,  {noreply, State}
+	;
+handle_cast({intro, Id, Ip, Proxy, Controller}, State)
+	-> timer:apply_repeatedly(?MINUTE, gen_server, cast, [self(), ping])
+	,  {noreply, State#state{id=Id, ip=Ip, proxy=Proxy, controller=Controller}}
+	;
+handle_cast(_Msg, State)            -> {noreply, State}.
 
-terminate(_Rsn, _State)              -> ok.
-code_change(_OldVsn, State, _Extra)  -> {ok, State}.
+handle_info(_Info, State)           -> {noreply, State}.
+terminate(_Rsn, _State)             -> gen_server:cast({global, heartbeat}, dead).
+code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 % ========= %
 % Utilities %
 % ========= %
-respond({id, UserName, _VerKey, _IsOp}, #state{socket=Socket, name=Name, motd=MOTD, id=Id} = State)
+respond({id, UserName, _VerKey, _IsOp}, #state{name=Name, motd=MOTD, id=Id, proxy=Proxy} = State)
 	-> send_packet(State, {id, Name, MOTD, false})
 	,  send_packet(State, {lvl_init})
-	,  {DataPkts, {XSi, YSi, ZSi}, {XSp, YSp, ZSp, HSp, PSp}} = world_serv:data_pkts()
-	,  [gen_tcp:send(Socket, DataPkt) || DataPkt <- DataPkts]
+	,  {DataPkts, {XSi, YSi, ZSi}, {XSp, YSp, ZSp, HSp, PSp}} = gen_server:call({global, world}, data_pkts)
+	,  [send_packet(State, DataPkt) || DataPkt <- DataPkts]
 	,  send_packet(State, {lvl_fin, XSi, YSi, ZSi})
 	,  send_packet(State, {spawn, -1, UserName, {XSp, 0}, {YSp, 0}, {ZSp, 0}, HSp, PSp})
 	,  send_packet(State, {msg, 0, <<"&eWelcome to the server!">>})
@@ -94,7 +85,7 @@ respond({pos_and_orient, -1, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Headin
 	,  State#state{pos={XInt, YInt, ZInt, Heading, Pitch}}
 	;
 respond({msg, -1, <<"/", Rest/binary>>}, State) -> command(binary:split(Rest, <<" ">>, [global, trim_all]), State);
-respond({msg, -1, Msg}, #state{socket=Socket, id=Id, username=UserName} = State)
+respond({msg, -1, Msg}, #state{id=Id, username=UserName} = State)
 	-> message(Msg, State)
 	,  State
 	;
@@ -130,11 +121,15 @@ command(_, State)
 	,  State
 	.
 
-pg_call(Msg) -> [gen_server:call(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(updates))].
-pg_cast(Msg) -> [gen_server:cast(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(updates))].
 
-send_packet(#state{socket=Socket, id=Id}, PktTuple)
-	-> gen_tcp:send(Socket, protocol_lib:build(PktTuple))
-	,  logger:notice("Sent packet: ~p~nTo: ~p~n", [PktTuple, Id])
+send_packet(#state{proxy=Proxy}, Pkt)
+	when is_binary(Pkt)
+	-> gen_server:cast(Proxy, {reply, Pkt})
+	;
+send_packet(#state{proxy=Proxy}, Pkt)
+	when is_tuple(Pkt)
+	-> gen_server:cast(Proxy, {reply, protocol_lib:build(Pkt)})
 	.
 
+pg_call(Msg) -> [gen_server:call(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(servers))].
+pg_cast(Msg) -> [gen_server:cast(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(servers))].

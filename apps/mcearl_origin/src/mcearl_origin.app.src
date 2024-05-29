@@ -1,0 +1,33 @@
+{application, mcearl_origin,
+	[ {description, "The main origin node of the cluster"}
+	, {vsn, "0.1.0"}
+	, {licenses, ["AGPL-3.0-only"]}
+	, {mod, {mcearl_origin_app, []}}
+	, {applications,
+		[ kernel
+		, stdlib
+		, mnesia
+		, inets
+		, ssl
+		, ssh
+		, ranch
+		, erlang_base62
+		]
+	}
+	, {modules,
+		[ mcearl_origin_app
+		, mcearl_origin_sup
+		, heartbeat
+		, world
+		, proxy
+		, controller_sup
+		, controller_man
+		, controller
+		]
+	}
+	, {registered, []}
+	, {env,[]}
+	, {links, []}
+	, {maxT, infinity}
+	]
+ }.

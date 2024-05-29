@@ -1,6 +1,6 @@
--module(world_serv).
+-module(world).
 -behaviour(gen_server).
--export([start_link/1, data_pkts/0]).
+-export([start_link/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -record(state, {arr, sizes, spawn}).
 -define(SERVER, ?MODULE).
@@ -9,16 +9,13 @@
 % === %
 % API %
 % === %
-start_link(World) -> gen_server:start_link({local, ?SERVER}, ?MODULE, [World], []).
-data_pkts()       -> gen_server:call(?SERVER, data_pkts).
+start_link(World) -> gen_server:start_link({global, ?SERVER}, ?MODULE, [World], []).
 
 % ========= %
 % Callbacks %
 % ========= %
 init(World)
-	-> process_flag(trap_exit, true)
-	,  pg:join(updates, self())
-	,  FileName = filename:join(code:priv_dir(mcearl), World)
+	-> FileName = filename:join(code:priv_dir(mcearl_origin), World)
 	,  {ok, File} = file:read_file(FileName)
 	,  GunzippedFile = zlib:gunzip(File)
 	,  {ok, NBT} = erl_nbt:decode(GunzippedFile)
@@ -58,7 +55,6 @@ handle_call(data_pkts, _From, #state{arr=BlockArr, sizes=Sizes, spawn=Spawn} = S
 	,  {reply, {DataPkts, Sizes, Spawn}, State}
 	;
 handle_call(_Req, _From, State)     -> {reply, ok, State}.
-handle_cast({pg, _Pkts}, State)     -> {noreply, State};
 handle_cast(_Msg, State)            -> {noreply, State}.
 handle_info(_Info, State)           -> {noreply, State}.
 terminate(_Rsn, _State)             -> ok.

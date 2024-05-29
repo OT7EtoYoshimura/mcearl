@@ -8,7 +8,6 @@ McEarl uses the following projects:
 - [ranch](https://github.com/ninenines/ranch) (ISC)
 - [erlang\_base62](https://github.com/gilbertwong96/erlang_base62) (MIT)
 - [erlang\_nbt](https://github.com/hypothermic/erl_nbt) (Apache 2.0)
-- [kube\_dist](https://github.com/seniverse/kube_dist) (Apache 2.0)
 
 Furthermore, I have been greatly inspired and aided by:
 

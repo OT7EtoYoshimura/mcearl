@@ -1,4 +1,4 @@
--module(mcearl_sup).
+-module(mcearl_origin_sup).
 -behaviour(supervisor).
 -export([start_link/0]).
 -export([init/1]).
@@ -12,7 +12,7 @@
 % === %
 % API %
 % === %
-start_link() -> supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+start_link() -> supervisor:start_link({global, ?SERVER}, ?MODULE, []).
 
 % ========= %
 % Callbacks %
@@ -24,36 +24,33 @@ init([])
 		, period    => 1
 		}
 	,  ChildSpecs =
-		[	#{id       => my_pg
-			, start    => {pg, start_link, []}
-			}
-		,	#{id       => world_serv
-			, start    => {world_serv, start_link, [?WORLD]}
+		[	#{id       => heartbeat
+			, start    => {heartbeat, start_link, [?MAXUSR, ?NAME]}
 			, restart  => permanent
 			, shutdown => 2000
 			, type     => worker
-			, modules  => [world_serv]
+			, modules  => [heartbeat]
 			}
-		,	#{id       => heartbeat_serv
-			, start    => {heartbeat_serv, start_link, [?MAXUSR, ?NAME]}
+		,	#{id       => world
+			, start    => {world, start_link, [?WORLD]}
 			, restart  => permanent
 			, shutdown => 2000
 			, type     => worker
-			, modules  => [heartbeat_serv]
+			, modules  => [world]
 			}
-		,	#{id       => player_man
-			, start    => {player_man, start_link, [?PORT]}
-			, restart  => permanent
-			, shutdown => 2000
-			, type     => worker
-			, modules  => [player_man]
-			}
-		,	#{id       => player_sup
-			, start    => {player_sup, start_link, [?NAME, ?MOTD]}
+		,	#{id       => controller_sup
+			, start    => {controller_sup, start_link, []}
 			, restart  => permanent
 			, shutdown => 2000
 			, type     => supervisor
-			, modules  => [player_sup]
+			, modules  => [controller_sup]
+			}
+		,	#{id       => controller_man
+			, start    => {controller_man, start_link, []}
+			, restart  => permanent
+			, shutdown => 2000
+			, type     => worker
+			, modules  => [controller_man]
 			}
 		]
 	,  {ok, {SupFlags, ChildSpecs}}

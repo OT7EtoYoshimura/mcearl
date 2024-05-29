@@ -1,0 +1,29 @@
+{application, mcearl_peer,
+	[ {description, "The peer node application to be replicated in the cluster"}
+	, {vsn, "0.3.0"}
+	, {licenses, ["AGPL-3.0-only"]}
+	, {mod, {mcearl_peer_app, []}}
+	, {applications,
+		[ kernel
+		, stdlib
+		, mnesia
+		, ssl
+		, erl_nbt
+		]
+	}
+	, {modules,
+		[ mcearl_peer_app
+		, mcearl_peer_sup
+		, server_man
+		, server_sup
+		, server
+		, protocol_lib
+		, util_lib
+		]
+	}
+	, {registered, []}
+	, {env,[]}
+	, {links, []}
+	, {maxT, infinity}
+	]
+ }.

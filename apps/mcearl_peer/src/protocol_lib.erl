@@ -1,5 +1,5 @@
 -module(protocol_lib).
--export([parse_toc/1, build/1]).
+-export([parse_toc/1, parse/1, build/1]).
 
 -define(STR_SIZE, 64).
 
@@ -19,25 +19,25 @@ parse_toc(<<16#0d, PlayerId/signed, Message:?STR_SIZE/binary, Rest/binary>>, Acc
 parse_toc(Bin, Acc) -> [{undefined, Bin} | Acc].
 
 
-%-spec parse(binary()) -> tuple() | undefined.
-%parse(<<16#00, 16#7, Name:?STR_SIZE/binary, Key:?STR_SIZE/binary, IsOp>>) -> {id, util_lib:bin_trim_right(Name), util_lib:bin_trim_right(Key), toOp(IsOp)};
-%parse(<<16#01>>) -> {ping};
-%parse(<<16#02>>) -> {lvl_init};
-%parse(<<16#03, Length:16/signed, Data:1024/binary, PercComp>>) -> {lvl_data, Length, Data, PercComp};
-%parse(<<16#04, XSize:16/signed, YSize:16/signed, ZSize:16/signed>>) -> {lvl_fin, XSize, YSize, ZSize};
-%parse(<<16#05, X:16/signed, Y:16/signed, Z:16/signed, Mode, BlockType>>) -> {set_block_m, X, Y, Z, toMode(Mode), BlockType};
-%parse(<<16#06, X:16/signed, Y:16/signed, Z:16/signed, BlockType>>) -> {set_block, X, Y, Z, BlockType};
-%parse(<<16#07, PlayerId/signed, Name:?STR_SIZE/binary, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Heading, Pitch>>) -> {spawn, PlayerId, util_lib:bin_trim_right(Name), {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch};
-%parse(<<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Heading, Pitch>>) -> {pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch};
-%parse(<<16#09, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5, Heading, Pitch>>)  -> {pos_and_orient_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch};
-%parse(<<16#0a, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5>>) -> {pos_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}};
-%parse(<<16#0b, PlayerId/signed, Heading, Pitch>>) -> {orient_up, PlayerId, Heading, Pitch};
-%parse(<<16#0c, PlayerId/signed>>) -> {despawn, PlayerId};
-%parse(<<16#0d, PlayerId/signed, Message:?STR_SIZE/binary>>) -> {msg, PlayerId, util_lib:bin_trim_right(Message)};
-%parse(<<16#0e, Reason:?STR_SIZE/binary>>) -> {disconnect, toReason(Reason)};
-%parse(<<16#0f, UserType>>) -> {user_type_up, toOp(UserType)};
-%parse(_)-> undefined.
-%
+-spec parse(binary()) -> tuple() | undefined.
+parse(<<16#00, 16#7, Name:?STR_SIZE/binary, Key:?STR_SIZE/binary, IsOp>>) -> {id, util_lib:bin_trim_right(Name), util_lib:bin_trim_right(Key), toOp(IsOp)};
+parse(<<16#01>>) -> {ping};
+parse(<<16#02>>) -> {lvl_init};
+parse(<<16#03, Length:16/signed, Data:1024/binary, PercComp>>) -> {lvl_data, Length, Data, PercComp};
+parse(<<16#04, XSize:16/signed, YSize:16/signed, ZSize:16/signed>>) -> {lvl_fin, XSize, YSize, ZSize};
+parse(<<16#05, X:16/signed, Y:16/signed, Z:16/signed, Mode, BlockType>>) -> {set_block_m, X, Y, Z, toMode(Mode), BlockType};
+parse(<<16#06, X:16/signed, Y:16/signed, Z:16/signed, BlockType>>) -> {set_block, X, Y, Z, BlockType};
+parse(<<16#07, PlayerId/signed, Name:?STR_SIZE/binary, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Heading, Pitch>>) -> {spawn, PlayerId, util_lib:bin_trim_right(Name), {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch};
+parse(<<16#08, PlayerId/signed, XInt:11/signed, XFrac:5, YInt:11/signed, YFrac:5, ZInt:11/signed, ZFrac:5, Heading, Pitch>>) -> {pos_and_orient, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch};
+parse(<<16#09, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5, Heading, Pitch>>)  -> {pos_and_orient_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Heading, Pitch};
+parse(<<16#0a, PlayerId/signed, XInt:3/signed, XFrac:5, YInt:3/signed, YFrac:5, ZInt:3/signed, ZFrac:5>>) -> {pos_up, PlayerId, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}};
+parse(<<16#0b, PlayerId/signed, Heading, Pitch>>) -> {orient_up, PlayerId, Heading, Pitch};
+parse(<<16#0c, PlayerId/signed>>) -> {despawn, PlayerId};
+parse(<<16#0d, PlayerId/signed, Message:?STR_SIZE/binary>>) -> {msg, PlayerId, util_lib:bin_trim_right(Message)};
+parse(<<16#0e, Reason:?STR_SIZE/binary>>) -> {disconnect, toReason(Reason)};
+parse(<<16#0f, UserType>>) -> {user_type_up, toOp(UserType)};
+parse(_)-> undefined.
+
 % =============== %
 % Packet Building %
 % =============== %
@@ -86,7 +86,7 @@ build({user_type_up, IsOp})
 -type mode()   :: created | destroyed.
 
 -spec fromReason(reason() | undefined) -> binary().
-%-spec toReason(binary())               -> reason() | undefined.
+-spec toReason(binary())               -> reason() | undefined.
 -spec fromOp(boolean())                -> char().
 -spec toOp(char())                     -> boolean().
 -spec fromMode(mode() | undefined)     -> char().
@@ -98,11 +98,11 @@ fromReason(clicking)  -> <<"Cheat detected: Too much clicking!                  
 fromReason(lag)       -> <<"Cheat detected: Too much lag                                    ">>;
 fromReason(undefined) -> <<"Cheat detected: undefined                                       ">>.
 
-%toReason(<<"Cheat detected: Distance                                        ">>) -> distance;
-%toReason(<<"Cheat detected: Tile type                                       ">>) -> tile;
-%toReason(<<"Cheat detected: Too much clicking!                              ">>) -> clicking;
-%toReason(<<"Cheat detected: Too much lag                                    ">>) -> lag;
-%toReason(_)                                                                      -> undefined.
+toReason(<<"Cheat detected: Distance                                        ">>) -> distance;
+toReason(<<"Cheat detected: Tile type                                       ">>) -> tile;
+toReason(<<"Cheat detected: Too much clicking!                              ">>) -> clicking;
+toReason(<<"Cheat detected: Too much lag                                    ">>) -> lag;
+toReason(_)                                                                      -> undefined.
 
 fromOp(true)  -> 16#64;
 fromOp(false) -> 16#00.

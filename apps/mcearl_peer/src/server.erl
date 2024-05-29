@@ -47,7 +47,7 @@ handle_cast(ping, State)
 	,  {noreply, State}
 	;
 handle_cast({intro, Id, Ip, Proxy, Controller}, State)
-	-> timer:apply_repeatedly(?MINUTE, gen_server, cast, [self(), ping])
+	-> timer:apply_interval(?MINUTE, gen_server, cast, [self(), ping])
 	,  {noreply, State#state{id=Id, ip=Ip, proxy=Proxy, controller=Controller}}
 	;
 handle_cast(_Msg, State)            -> {noreply, State}.
@@ -59,7 +59,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 % ========= %
 % Utilities %
 % ========= %
-respond({id, UserName, _VerKey, _IsOp}, #state{name=Name, motd=MOTD, id=Id, proxy=Proxy} = State)
+respond({id, UserName, _VerKey, _IsOp}, #state{name=Name, motd=MOTD, id=Id} = State)
 	-> send_packet(State, {id, Name, MOTD, false})
 	,  send_packet(State, {lvl_init})
 	,  {DataPkts, {XSi, YSi, ZSi}, {XSp, YSp, ZSp, HSp, PSp}} = gen_server:call({global, world}, data_pkts)
@@ -85,7 +85,7 @@ respond({pos_and_orient, -1, {XInt, XFrac}, {YInt, YFrac}, {ZInt, ZFrac}, Headin
 	,  State#state{pos={XInt, YInt, ZInt, Heading, Pitch}}
 	;
 respond({msg, -1, <<"/", Rest/binary>>}, State) -> command(binary:split(Rest, <<" ">>, [global, trim_all]), State);
-respond({msg, -1, Msg}, #state{id=Id, username=UserName} = State)
+respond({msg, -1, Msg}, State)
 	-> message(Msg, State)
 	,  State
 	;

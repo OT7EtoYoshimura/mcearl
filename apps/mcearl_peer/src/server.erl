@@ -17,7 +17,7 @@ intro(Pid, Id, Ip, Proxy, Controller) -> gen_server:cast(Pid, {intro, Id, Ip, Pr
 % ========= %
 init([Name, MOTD])
 	-> pg:join(node(), servers, self())
-	,  gen_server:cast({global, heartbeat}, alive)
+	,  gen_server:cast({global, heartbeat}, {monitor, self()})
 	,  {ok, #state{name=list_to_binary(Name), motd=list_to_binary(MOTD)}}
 	.
 
@@ -53,7 +53,7 @@ handle_cast({intro, Id, Ip, Proxy, Controller}, State)
 handle_cast(_Msg, State)            -> {noreply, State}.
 
 handle_info(_Info, State)           -> {noreply, State}.
-terminate(_Rsn, _State)             -> gen_server:cast({global, heartbeat}, dead).
+terminate(_Rsn, _State)             -> ok.
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 % ========= %
@@ -62,7 +62,7 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 respond({id, UserName, _VerKey, _IsOp}, #state{name=Name, motd=MOTD, id=Id} = State)
 	-> send_packet(State, {id, Name, MOTD, false})
 	,  send_packet(State, {lvl_init})
-	,  {DataPkts, {XSi, YSi, ZSi}, {XSp, YSp, ZSp, HSp, PSp}} = gen_server:call({global, world}, data_pkts)
+	,  {DataPkts, {XSi, YSi, ZSi}, {XSp, YSp, ZSp, HSp, PSp}} = gen_server:call({global, world}, data_pkts, 20000)
 	,  [send_packet(State, DataPkt) || DataPkt <- DataPkts]
 	,  send_packet(State, {lvl_fin, XSi, YSi, ZSi})
 	,  send_packet(State, {spawn, -1, UserName, {XSp, 0}, {YSp, 0}, {ZSp, 0}, HSp, PSp})
@@ -89,7 +89,7 @@ respond({msg, -1, Msg}, State)
 	-> message(Msg, State)
 	,  State
 	;
-respond(undefined, State) -> State.
+respond({undefined, Bin}, State) -> State.
 
 message(Msg, #state{username=UserName} = State)
 	when byte_size(Msg) < (60 - byte_size(UserName))
@@ -121,7 +121,6 @@ command(_, State)
 	,  State
 	.
 
-
 send_packet(#state{proxy=Proxy}, Pkt)
 	when is_binary(Pkt)
 	-> gen_server:cast(Proxy, {reply, Pkt})
@@ -131,5 +130,5 @@ send_packet(#state{proxy=Proxy}, Pkt)
 	-> gen_server:cast(Proxy, {reply, protocol_lib:build(Pkt)})
 	.
 
-pg_call(Msg) -> [gen_server:call(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(servers))].
-pg_cast(Msg) -> [gen_server:cast(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(servers))].
+pg_call(Msg) -> [gen_server:call(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(node(), servers))].
+pg_cast(Msg) -> [gen_server:cast(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(node(), servers))].

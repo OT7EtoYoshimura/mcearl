@@ -19,14 +19,15 @@ init([])
 	,  {ok, PeerMods} = application:get_key(mcearl_peer, modules)
 	,  {ok, NBTMods}  = application:get_key(erl_nbt    , modules)
 	,  {ok, [Host | Hosts]} = application:get_env(available_hosts)
+	,  StringHost = atom_to_list(Host)
 	,  application:set_env(mcearl_origin, available_hosts, Hosts)
 	,  Ssh = os:find_executable("ssh")
 	,  {ok, Pid, Node} = peer:start_link(
 		#{connection => standard_io
-		, exec => {Ssh, [Host, "erl26 -name " ++ Host ++ " -setcookie gabriel"]}
+		, exec => {Ssh, [StringHost, "erl26 -name " ++ StringHost ++ " -setcookie gabriel"]}
 		}
 	)
-	,  net_kernel:connect_node(list_to_atom(Host))
+	,  net_kernel:connect_node(Host)
 	,  lists:map(fun c:nl/1, PeerMods ++ NBTMods)
 	,  erpc:call(Node, application, load, [{application, mcearl_peer, PeerApp}])
 	,  erpc:call(Node, application, load, [{application, erl_nbt, NBTApp}])

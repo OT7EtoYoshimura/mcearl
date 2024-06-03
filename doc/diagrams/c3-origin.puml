@@ -4,7 +4,7 @@
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-title Component Diagram\nMcEarl v2\nOrigin Node
+title Component Diagram\nMcEarl\nOrigin Node
 AddRelTag("dashed", $lineStyle = DashedLine())
 
 Person(client1, "Client", "Plays Multiplayer")
@@ -12,33 +12,39 @@ Person(client2, "Client", "Plays Multiplayer")
 Person(client3, "Client", "Plays Multiplayer")
 
 Container_Boundary(boundary, "Origin Node") {
-	Component(mcearl_sup, "Master Supervisor", "Component: Erlang Supervisor Actor")
+	Component(origin_sup, "Master Supervisor", "Component: Erlang Supervisor Actor")
 	Component(heartbeat, "Heartbeat", "Component: Erlang Worker Actor")
-	Component(player_man, "Player Manager", "Component: Erlang Worker Actor")
-	Component(serverSup, "Server Supervisor", "Component: Erlang Supervisor Actor")
-	Component(server1Comp, "Server Communicator", "Component: Erlang Worker Actor")
-	Component(server2Comp, "Server Communicator", "Component: Erlang Worker Actor")
-	Component(server3Comp, "Server Communicator", "Component: Erlang Worker Actor")
+	Component(controller_sup, "Controller Actor Supervisor", "Component: Erlang Worker Supervisor")
+	Component(controller_man, "Controller Actor Manager", "Component: Erlang Worker Worker")
+	Component(controller, "Peer Node Controller", "Component: Erlang Worker Actor")
+	Component(proxy, "TCP Proxy", "Component: Erlang Worker Actor")
+	Component(ranch, "TCP Pooling Library", "Component: Erlang Application")
 }
 
 Container_Ext(server1, "Server Peer Node", "Container: Erlang Distributed Application")
 Container_Ext(server2, "Server Peer Node", "Container: Erlang Distributed Application")
 Container_Ext(server3, "Server Peer Node", "Container: Erlang Distributed Application")
+Container_Ext(monitor, "Monitoring Node", "Container: Erlang Distributed Application")
 System_Ext(classicube, "Classicube", "Hosts the server list")
 
-Rel(client1, player_man, "connects via")
-Rel(client2, player_man, "connects via")
-Rel(client3, player_man, "connects via")
-Rel(mcearl_sup, serverSup, "supervises")
-Rel(mcearl_sup, player_man, "supervises")
-Rel(mcearl_sup, heartbeat, "supervises")
+Rel(origin_sup, heartbeat, "supervises")
+Rel(origin_sup, controller_sup, "supervises")
+Rel(origin_sup, controller_man, "supervises")
+Rel(origin_sup, controller, "supervises")
+Rel(origin_sup, proxy, "supervises")
+Rel(client1, ranch, "connects via")
+Rel(client2, ranch, "connects via")
+Rel(client3, ranch, "connects via")
+Rel(ranch, proxy, "gives communication rights to")
+Rel(proxy, controller_man, "asks for an available server")
+Rel(proxy, server1, "proxies to")
+Rel(proxy, server2, "proxies to")
+Rel(proxy, server3, "proxies to")
+Rel(controller_man, controller_sup, "spawns new controller actors")
+Rel(controller_man, controller, "managers")
+Rel(controller_sup, controller, "supervises")
 Rel(heartbeat, classicube, "sends heartbeat packets to")
-Rel(serverSup, server1Comp, "supervises")
-Rel(serverSup, server2Comp, "supervises")
-Rel(serverSup, server3Comp, "supervises")
-Rel(server1Comp, server1, "offloads communicates with")
-Rel(server2Comp, server2, "offloads communicates with")
-Rel(server3Comp, server3, "offloads communicates with")
+Rel(origin_sup, monitor, "notifies to enter into the cluster")
 
 
 LAYOUT_WITH_LEGEND()

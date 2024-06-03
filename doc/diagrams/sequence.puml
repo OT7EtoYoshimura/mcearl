@@ -1,29 +1,41 @@
 @startuml
 
-actor player as player
+actor Player as player
 
-box "McEarl"
-participant player_man
-participant player_serv
-participant world_serv
+box "McEarl Origin Node"
+entity Ranch as ranch
+entity Proxy as proxy
+entity "Controller Manager" as controller_man
+entity "Controller Supervisor" as controller_sup
+entity Controller as controller
 end box
-database mnesia as mnesia
 
-player -> player_man : connect
-player_man -> player_serv : delegate
-player -> player_serv : id
+box "McEarl Peer Node"
+entity "Server Manager" as server_man
+entity "Server Supervisor" as server_sup
+entity Server as server
+end box
 
-group Identification [successful]
-	player_serv -> player : id
-else failure
-	player_serv -> player : disconnect
-end
+database Mnesia as mnesia
 
-loop 
-	player_serv <-> player : communicate
-	player_serv <-> player_serv : update
-	player_serv -> world_serv : update
-	world_serv -> mnesia : write to
+player -> ranch : connect
+ranch -> proxy : delegates
+proxy -> controller_man : asks for an available server
+controller_man -> controller_sup: spawns new node controllers
+controller_sup -> controller : supervises
+controller -> server_man : asks for an available server
+server_man -> server_sup : spawns new servers
+server_sup -> server: supervises
+server_man -> server : asks for an available server
+server_man -> controller: returns available server pid
+controller -> controller_man: returns available server pid
+controller_man -> proxy : returns an available server pid
+
+loop
+	player <-> proxy : communicate
+	proxy <-> server : communicate
+	server <-> server : update
+	server -> mnesia : write to
 end
 
 @enduml

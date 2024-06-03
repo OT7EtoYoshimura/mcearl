@@ -7,14 +7,11 @@
 title System Context Diagram\nMcEarl\nMinecraft Classic Server in Erlang/OTP
 
 Person(client, "Client", "Plays Multiplayer")
-Person(admin, "Admin", "Administers")
-
 System(mcearl, "McEarl", "Minecraft Clasic Server")
 System_Ext(classicube, "Classicube", "Hosts the server list")
 
 Rel(client, mcearl, "connects to")
-Rel(admin, mcearl, "connects to")
-Rel(mcearl, classicube, "sends heartbeat packets to")
+Rel(mcearl, classicube, "sends heartbeat packets to and authenticates through")
 
 LAYOUT_WITH_LEGEND()
 @enduml

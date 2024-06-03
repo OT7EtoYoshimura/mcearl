@@ -1,0 +1,54 @@
+@startuml c3-server
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Component Diagram\nMcEarl\nServer Peer Node
+AddRelTag("dashed", $lineStyle = DashedLine())
+
+Person(client1, "Client", "Plays Multiplayer")
+Person(client2, "Client", "Plays Multiplayer")
+Person(client3, "Client", "Plays Multiplayer")
+
+Container_Boundary(boundary, "Server Peer Node") {
+	Component(peer_sup, "Master Supervisor", "Component: Erlang Supervisor Actor")
+	Component(server_sup, "Server Supervisor", "Component: Erlang Supervisor Actor")
+	Component(server_man, "Server Manager", "Component: Erlang Worker Actor")
+	Component(server1, "Server", "Component: Erlang Worker Actor")
+	Component(server2, "Server", "Component: Erlang Worker Actor")
+	Component(server3, "Server", "Component: Erlang Worker Actor")
+	Component(protocol_lib, "Protocol Library", "Component: Erlang Stateless Module")
+	Component(util_lib, "Utilities Library", "Component: Erlang Stateless Module")
+}
+
+Container_Ext(origin, "Origin Node", "Container: Erlang Application")
+Container_Ext(monitor, "Monitoring Node", "Container: Erlang Distributed Application")
+ContainerDb_Ext(db, "Distributed Database", "Container: Mnesia")
+
+Rel(peer_sup, server_sup, "supervises")
+Rel(peer_sup, server_man, "supervises")
+Rel(server_sup, server1, "supervises")
+Rel(server_sup, server2, "supervises")
+Rel(server_sup, server3, "supervises")
+Rel(client1, origin, "connects via")
+Rel(client2, origin, "connects via")
+Rel(client3, origin, "connects via")
+Rel(origin, server_man, "asks for an available server")
+Rel(server_man, server_sup, "spawns new server actors")
+Rel(origin, server1, "proxies to")
+Rel(origin, server2, "proxies to")
+Rel(origin, server3, "proxies to")
+Rel(server1, db, "reads from & writes to")
+Rel(server2, db, "reads from & writes to")
+Rel(server3, db, "reads from & writes to")
+Rel(server1, protocol_lib, "users procedures from")
+Rel(server2, protocol_lib, "users procedures from")
+Rel(server3, protocol_lib, "users procedures from")
+Rel(server1, util_lib, "users procedures from")
+Rel(server2, util_lib, "users procedures from")
+Rel(server3, util_lib, "users procedures from")
+Rel(monitor, boundary, "monitors")
+
+LAYOUT_WITH_LEGEND()
+@enduml

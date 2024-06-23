@@ -27,11 +27,13 @@ init([])
 		, exec => {Ssh, [StringHost, "erl26 -name " ++ StringHost ++ " -setcookie gabriel"]}
 		}
 	)
-	,  net_kernel:connect_node(Host)
+	,  true = net_kernel:connect_node(Host)
 	,  lists:map(fun c:nl/1, PeerMods ++ NBTMods)
 	,  erpc:call(Node, application, load, [{application, mcearl_peer, PeerApp}])
 	,  erpc:call(Node, application, load, [{application, erl_nbt, NBTApp}])
 	,  erpc:call(Node, application, ensure_all_started, [mcearl_peer])
+	,  mnesia:change_config(extra_db_nodes, nodes())
+	,  erpc:call(Node, mnesia, wait_for_tables, [[worlds, players, msgs], 1000])
 	,  {ok, #state{pid=Pid, node=Node}}
 	.
 

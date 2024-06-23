@@ -5,6 +5,9 @@
 -record(state, {name, motd, ip, proxy, controller, id, username, pos}).
 -define(MINUTE, 60*1000).
 
+-record(players, {name, pos, verkey}).
+-record(msgs, {player_name, timestamp, msg}).
+
 % === %
 % API %
 % === %
@@ -59,10 +62,11 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 % ========= %
 % Utilities %
 % ========= %
-respond({id, UserName, _VerKey, _IsOp}, #state{name=Name, motd=MOTD, id=Id} = State)
+respond({id, UserName, VerKey, _IsOp}, #state{name=Name, motd=MOTD, id=Id} = State)
 	-> send_packet(State, {id, Name, MOTD, false})
+	,  mnesia:transaction(fun() -> mnesia:write(#players{name=UserName, pos={0,0,0}, verkey=VerKey}) end)
 	,  send_packet(State, {lvl_init})
-	,  {DataPkts, {XSi, YSi, ZSi}, {XSp, YSp, ZSp, HSp, PSp}} = gen_server:call({global, world}, data_pkts, 20000)
+	,  {DataPkts, {XSi, YSi, ZSi}, {XSp, YSp, ZSp, HSp, PSp}} = data_pkts()
 	,  [send_packet(State, DataPkt) || DataPkt <- DataPkts]
 	,  send_packet(State, {lvl_fin, XSi, YSi, ZSi})
 	,  send_packet(State, {spawn, -1, UserName, {XSp, 0}, {YSp, 0}, {ZSp, 0}, HSp, PSp})
@@ -104,10 +108,16 @@ message(Msg, #state{username=UserName} = State)
 	.
 send_msg(Msg, #state{id=Id, username=UserName} = State)
 	-> PrependedMessage = <<"<", UserName/binary, ">: ", Msg/binary>>
+	,  mnesia:transaction(fun() -> mnesia:write(#msgs{player_name=UserName, timestamp=erlang:system_time(), msg=Msg}) end)
 	,  pg_cast(protocol_lib:build({msg, Id, PrependedMessage}))
 	,  send_packet(State, {msg, -1, PrependedMessage})
 	.
 
+command([<<"forgetme">>], #state{username=UserName} = State)
+	-> mnesia:dirty_delete(msgs, UserName)
+	,  logger:warning(binary_to_list(UserName))
+	,  State
+	;
 command([<<"tp">>, XBin, YBin, ZBin], #state{id=Id, pos={_,_,_,H,P}} = State)
 	-> X = util_lib:clamp(binary_to_integer(XBin), -1024, 1023)
 	,  Y = util_lib:clamp(binary_to_integer(YBin), -1024, 1024)
@@ -116,8 +126,9 @@ command([<<"tp">>, XBin, YBin, ZBin], #state{id=Id, pos={_,_,_,H,P}} = State)
 	,  send_packet(State, {pos_and_orient, -1, {X, 0}, {Y, 0}, {Z, 0}, H, P})
 	,  State#state{pos={X, Y, Z, H, P}}
 	;
-command(_, State)
+command(Command, State)
 	-> send_packet(State, {msg, 0, <<"&cUnknown command.">>})
+	,  logger:warning(Command)
 	,  State
 	.
 
@@ -132,3 +143,23 @@ send_packet(#state{proxy=Proxy}, Pkt)
 
 pg_call(Msg) -> [gen_server:call(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(node(), servers))].
 pg_cast(Msg) -> [gen_server:cast(Pid, {pg, Msg}) || Pid <- lists:delete(self(), pg:get_members(node(), servers))].
+
+data_pkts()
+	-> [{worlds, default, BlockArr, Size, Spawn}] = mnesia:dirty_read(worlds, default)
+	,  BinArr = list_to_binary(BlockArr)
+	,  Len = byte_size(BinArr)
+	,  PrefixedArr = <<Len:32, BinArr/binary>>
+	,  GzippedArr = zlib:gzip(PrefixedArr)
+	,  {PaddingLen, Chunks} = util_lib:chunksOf(1024, GzippedArr)
+	,  ChunksCnt = length(Chunks)
+	,  EnumChunks = lists:enumerate(Chunks)
+	,  DataPkts = lists:map(
+		fun({N, Chunk}) when N =:= ChunksCnt ->
+			protocol_lib:build({lvl_data, 1024 - PaddingLen, Chunk, 100});
+		   ({N, Chunk}) ->
+			protocol_lib:build({lvl_data, 1024, Chunk, round(N / ChunksCnt * 100)})
+		end,
+		EnumChunks
+	)
+	,  {DataPkts, Size, Spawn}
+	.
